@@ -537,6 +537,7 @@
     .weather-cp-time { font-weight: 700; width: 40px; flex-shrink: 0; }
     .weather-cp-icon { font-size: 16px; width: 20px; flex-shrink: 0; text-align: center; }
     .weather-cp-detail { flex: 1; color: var(--ink-soft); }
+    .weather-cp-place { font-size: 10.5px; color: var(--ink-faint); }
     .weather-cp-km { font-size: 10.5px; color: var(--ink-faint); white-space: nowrap; }
     .weather-cp-na { color: var(--ink-faint); font-style: italic; }
 
@@ -583,7 +584,7 @@
     <button id="btn-otm">OpenTopo</button>
   </div>
 
-  <div id="app-version">build 2026-08-27-28 — météo : curseur de vitesse + aperçu arrivée, pause déjeuner retirée</div>
+  <div id="app-version">build 2026-08-27-30 — lieu météo : un par créneau de 2h, sans plafond</div>
 
   <div id="elevation-panel">
     <div id="elevation-panel-header">
@@ -2805,7 +2806,7 @@
     function renderWeatherResults(checkpointsWithWeather) {
       let html = '';
       let currentDay = -1;
-      checkpointsWithWeather.forEach(function (c) {
+      checkpointsWithWeather.forEach(function (c, idx) {
         if (c.dayIndex !== currentDay) {
           currentDay = c.dayIndex;
           const dateLabel = c.timestamp.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
@@ -2830,10 +2831,73 @@
 
         html += `<div class="weather-checkpoint"><div class="weather-cp-time">${timeLabel}</div>` +
           `<div class="weather-cp-icon">${weatherInfo.icon}</div>` +
-          `<div class="weather-cp-detail">${escapeHtml(prefix + detail)}</div>` +
+          `<div class="weather-cp-detail">${escapeHtml(prefix + detail)}<br>` +
+          `<span class="weather-cp-place" data-cp-index="${idx}">📍 …</span></div>` +
           `<div class="weather-cp-km">${kmLabel}</div></div>`;
       });
       weatherResultsEl.innerHTML = html;
+      resolveWeatherCheckpointPlaces(checkpointsWithWeather);
+    }
+
+    // --- Lieu de chaque prévision, via Nominatim (reverse geocoding) ---
+    //
+    // Un lieu par créneau météo — exactement les mêmes points que ceux déjà
+    // interrogés pour la prévision (un tous les CHECKPOINT_INTERVAL_H, soit
+    // 2h), pas plus. Cache par coordonnée arrondie (~1 km) pour éviter de
+    // re-solliciter Nominatim quand deux créneaux tombent au même endroit,
+    // et espacement de 1,1 s entre appels réels pour respecter la limite
+    // de 1 requête/seconde de leur politique d'usage.
+    const NOMINATIM_REVERSE_URL = 'https://nominatim.openstreetmap.org/reverse';
+    const GEOCODE_ROUND_PRECISION = 2; // ≈ 1,1 km de résolution du cache
+    const GEOCODE_DELAY_MS = 1100;
+    const placeNameCache = new Map(); // "lat,lon arrondis" -> nom de lieu (ou null si échec)
+
+    function roundedCoordKey(lat, lon) {
+      return `${lat.toFixed(GEOCODE_ROUND_PRECISION)},${lon.toFixed(GEOCODE_ROUND_PRECISION)}`;
+    }
+
+    function extractPlaceName(nominatimResult) {
+      const a = nominatimResult && nominatimResult.address;
+      if (!a) return null;
+      return a.village || a.town || a.city || a.municipality || a.suburb || a.hamlet || a.county || null;
+    }
+
+    async function reverseGeocode(lat, lon) {
+      const url = `${NOMINATIM_REVERSE_URL}?format=json&lat=${lat}&lon=${lon}&zoom=13&addressdetails=1`;
+      const response = await fetchWithTimeout(url, 8000);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const data = await response.json();
+      return extractPlaceName(data);
+    }
+
+    async function resolveWeatherCheckpointPlaces(checkpoints) {
+      let lookupsUsed = 0;
+
+      for (let i = 0; i < checkpoints.length; i++) {
+        const c = checkpoints[i];
+        if (!c.available) continue;
+        const el = weatherResultsEl.querySelector(`.weather-cp-place[data-cp-index="${i}"]`);
+        if (!el) continue;
+
+        const key = roundedCoordKey(c.lat, c.lon);
+        if (placeNameCache.has(key)) {
+          const cached = placeNameCache.get(key);
+          el.textContent = cached ? `📍 ${cached}` : '';
+          continue;
+        }
+
+        try {
+          lookupsUsed++;
+          if (lookupsUsed > 1) await new Promise(r => setTimeout(r, GEOCODE_DELAY_MS));
+          const place = await reverseGeocode(c.lat, c.lon);
+          placeNameCache.set(key, place);
+          el.textContent = place ? `📍 ${place}` : '';
+        } catch (err) {
+          console.warn('[weather] géocodage inverse échoué pour', key, '—', err.message);
+          placeNameCache.set(key, null);
+          el.textContent = '';
+        }
+      }
     }
 
     weatherComputeBtn.addEventListener('click', async function () {
