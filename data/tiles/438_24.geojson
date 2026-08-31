@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[2.4650788,43.8853263]},"properties":{"category":"bakery","name":"Durand","osm_id":6933079221}},{"type":"Feature","geometry":{"type":"Point","coordinates":[2.4616825,43.8876185]},"properties":{"category":"bakery","name":"Le Fournil de Toms","osm_id":8270755702}}]}

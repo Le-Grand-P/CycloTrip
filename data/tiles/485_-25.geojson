@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[-2.4372775,48.5706503]},"properties":{"category":"bakery","osm_id":10012701301}},{"type":"Feature","geometry":{"type":"Point","coordinates":[-2.4536904,48.5206223]},"properties":{"category":"bakery","name":"La Ferme du Four à pain","osm_id":13919627436}}]}

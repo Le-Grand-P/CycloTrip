@@ -1,1 +1,1 @@
-{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[2.6011939,46.5678301]},"properties":{"category":"repair","osm_id":12049536790}}]}
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[2.6094212,46.5366373]},"properties":{"category":"bakery","name":"La Boule'Ange","osm_id":6068919098}},{"type":"Feature","geometry":{"type":"Point","coordinates":[2.6011939,46.5678301]},"properties":{"category":"repair","osm_id":12049536790}}]}

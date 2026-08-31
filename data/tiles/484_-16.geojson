@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[-1.5880423,48.4963562]},"properties":{"category":"bakery","osm_id":4207121302}},{"type":"Feature","geometry":{"type":"Point","coordinates":[-1.5746252,48.427344]},"properties":{"category":"bakery","name":"La Gourmandise","phone":"+33 2 99 17 39 14","osm_id":10159967968}}]}

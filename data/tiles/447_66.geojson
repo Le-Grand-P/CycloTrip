@@ -1,1 +1,1 @@
-{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[6.6008437,44.7046215]},"properties":{"category":"wash","osm_id":13019189847}}]}
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[6.6079595,44.7065436]},"properties":{"category":"bakery","name":"Le fournil d'Antony","osm_id":3441117752}},{"type":"Feature","geometry":{"type":"Point","coordinates":[6.6008437,44.7046215]},"properties":{"category":"wash","osm_id":13019189847}}]}

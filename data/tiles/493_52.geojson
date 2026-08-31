@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[5.2336513,49.3070296]},"properties":{"category":"bakery","osm_id":3367596656}},{"type":"Feature","geometry":{"type":"Point","coordinates":[5.2684382,49.3223649]},"properties":{"category":"bakery","name":"La Mie Noël","opening_hours":"Tu-Su 07:00-12:00","osm_id":13135737652}}]}

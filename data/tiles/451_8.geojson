@@ -1,1 +1,1 @@
-{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[0.8002112,45.1498657]},"properties":{"category":"compressed_air","osm_id":5098163481}}]}
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[0.8606436,45.122686]},"properties":{"category":"bakery","osm_id":5029250349}},{"type":"Feature","geometry":{"type":"Point","coordinates":[0.8002112,45.1498657]},"properties":{"category":"compressed_air","osm_id":5098163481}}]}

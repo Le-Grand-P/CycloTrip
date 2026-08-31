@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[0.5866903,48.0694926]},"properties":{"category":"bakery","name":"La Fournée du Boulanger","osm_id":8743778545}},{"type":"Feature","geometry":{"type":"Point","coordinates":[0.5363123,48.0394031]},"properties":{"category":"bakery","osm_id":13260160808}}]}

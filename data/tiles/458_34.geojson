@@ -1,1 +1,1 @@
-{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[3.4058529,45.8504621]},"properties":{"category":"compressed_air","osm_id":6561518767}}]}
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[3.4058529,45.8504621]},"properties":{"category":"compressed_air","osm_id":6561518767}},{"type":"Feature","geometry":{"type":"Point","coordinates":[3.4971026,45.8379723]},"properties":{"category":"bakery","name":"Chapelon","osm_id":9025994291}}]}

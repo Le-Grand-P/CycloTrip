@@ -1,1 +1,1 @@
-{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[2.5251192,50.0706118]},"properties":{"category":"compressed_air","osm_id":11221257912}}]}
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[2.5251192,50.0706118]},"properties":{"category":"compressed_air","osm_id":11221257912}},{"type":"Feature","geometry":{"type":"Point","coordinates":[2.5176274,50.0109995]},"properties":{"category":"bakery","name":"Boulangerie Delonnelle","osm_id":13398118093}}]}

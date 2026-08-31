@@ -1,1 +1,1 @@
-{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[3.2118031,47.613351]},"properties":{"category":"shop","name":"Vert Puisaye","osm_id":6374180993}}]}
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[3.2620664,47.6215955]},"properties":{"category":"bakery","osm_id":3351731231}},{"type":"Feature","geometry":{"type":"Point","coordinates":[3.2118031,47.613351]},"properties":{"category":"shop","name":"Vert Puisaye","osm_id":6374180993}}]}

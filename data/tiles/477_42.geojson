@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[4.2136392,47.7299735]},"properties":{"category":"bakery","name":"Le Fournil de Nuit","osm_id":4678694840}},{"type":"Feature","geometry":{"type":"Point","coordinates":[4.2295269,47.7345859]},"properties":{"category":"bakery","name":"Le Petit Fournil","osm_id":9679971538}}]}

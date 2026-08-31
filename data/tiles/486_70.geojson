@@ -1,1 +1,1 @@
-{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[7.0483698,48.6933924]},"properties":{"category":"repair","osm_id":13831105934}}]}
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[7.0995686,48.6355003]},"properties":{"category":"bakery","name":"Boulangerie Patisserie Littner","osm_id":3020880524}},{"type":"Feature","geometry":{"type":"Point","coordinates":[7.0483698,48.6933924]},"properties":{"category":"repair","osm_id":13831105934}}]}

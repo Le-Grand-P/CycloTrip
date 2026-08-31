@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[4.7934985,49.6998773]},"properties":{"category":"bakery","osm_id":5228851841}},{"type":"Feature","geometry":{"type":"Point","coordinates":[4.7791774,49.6975707]},"properties":{"category":"bakery","name":"Au palais gourmand","phone":"+33 3 24 29 12 26","osm_id":10797776442}}]}

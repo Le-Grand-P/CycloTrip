@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[4.4863251,47.1303994]},"properties":{"category":"bakery","name":"Pâtisserie d'Arnay","osm_id":7075376476}},{"type":"Feature","geometry":{"type":"Point","coordinates":[4.4871687,47.1313009]},"properties":{"category":"bakery","name":"Boulangerie du Craquelin","osm_id":8990050350}}]}

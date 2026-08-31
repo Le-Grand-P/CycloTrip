@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[6.9680303,49.0441743]},"properties":{"category":"bakery","name":"La Vieille Grange","osm_id":10681831976}},{"type":"Feature","geometry":{"type":"Point","coordinates":[6.9145256,49.080223]},"properties":{"category":"bakery","name":"L'Ami du Pain","osm_id":13809820151}}]}

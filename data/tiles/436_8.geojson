@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[0.8825321,43.6238333]},"properties":{"category":"bakery","name":"La Focaccia","osm_id":4770931349}},{"type":"Feature","geometry":{"type":"Point","coordinates":[0.878152,43.6271639]},"properties":{"category":"bakery","osm_id":12680805210}}]}

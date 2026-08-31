@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[-52.9546771,5.3775992]},"properties":{"category":"bakery","name":"Boulangerie artisanale","osm_id":9084192854}},{"type":"Feature","geometry":{"type":"Point","coordinates":[-52.9562826,5.3792736]},"properties":{"category":"bakery","osm_id":9084208454}}]}

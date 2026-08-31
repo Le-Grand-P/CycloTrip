@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[-2.0710428,47.7045291]},"properties":{"category":"bakery","osm_id":3500521496}},{"type":"Feature","geometry":{"type":"Point","coordinates":[-2.0695956,47.704448]},"properties":{"category":"bakery","name":"L'Ile aux Pains Bains","phone":"+33 2 99 91 72 79","osm_id":13432207701}}]}

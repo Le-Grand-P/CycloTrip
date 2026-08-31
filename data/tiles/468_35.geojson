@@ -1,1 +1,1 @@
-{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[3.5213971,46.8442352]},"properties":{"category":"repair","osm_id":13004316628}}]}
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[3.5213971,46.8442352]},"properties":{"category":"repair","osm_id":13004316628}},{"type":"Feature","geometry":{"type":"Point","coordinates":[3.5218034,46.844143]},"properties":{"category":"bakery","name":"La voie des fourches","osm_id":13004316629}}]}

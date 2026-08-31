@@ -1,1 +1,1 @@
-{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[0.6879466,45.2445416]},"properties":{"category":"repair","osm_id":13695815338}}]}
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[0.6933508,45.2010207]},"properties":{"category":"bakery","name":"Le Fournil du Privilège","osm_id":5257493645}},{"type":"Feature","geometry":{"type":"Point","coordinates":[0.6879466,45.2445416]},"properties":{"category":"repair","osm_id":13695815338}}]}

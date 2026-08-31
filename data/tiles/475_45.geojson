@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[4.5693169,47.5491242]},"properties":{"category":"bakery","osm_id":3507609272}},{"type":"Feature","geometry":{"type":"Point","coordinates":[4.5300079,47.5121168]},"properties":{"category":"bakery","name":"Le fournil de Flavigny","osm_id":10089082710}}]}

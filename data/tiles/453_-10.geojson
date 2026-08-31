@@ -1,1 +1,1 @@
-{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[-0.9559464,45.3221095]},"properties":{"category":"repair","osm_id":12542066601}}]}
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[-0.9559464,45.3221095]},"properties":{"category":"repair","osm_id":12542066601}},{"type":"Feature","geometry":{"type":"Point","coordinates":[-0.9403903,45.3068936]},"properties":{"category":"bakery","name":"La Marquisette","phone":"+33 5 56 41 00 49","osm_id":13015422202}}]}

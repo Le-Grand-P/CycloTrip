@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[1.3862632,44.4956207]},"properties":{"category":"bakery","name":"Au pain dorė","opening_hours":"Tu-Su 06:45-19:45","osm_id":5169024251}},{"type":"Feature","geometry":{"type":"Point","coordinates":[1.3607872,44.471233]},"properties":{"category":"bakery","osm_id":12863010231}}]}

@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[1.9298177,43.6768667]},"properties":{"category":"bakery","osm_id":9057347953}},{"type":"Feature","geometry":{"type":"Point","coordinates":[1.975663,43.6473198]},"properties":{"category":"bakery","name":"La Petite Boulangerie","osm_id":14106869515}}]}

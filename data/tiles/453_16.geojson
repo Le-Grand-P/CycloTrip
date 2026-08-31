@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[1.6385534,45.3523325]},"properties":{"category":"bakery","name":"Boulangerie","osm_id":2930966307}},{"type":"Feature","geometry":{"type":"Point","coordinates":[1.6430335,45.3971088]},"properties":{"category":"bakery","osm_id":12064308602}}]}

@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[0.3163852,47.6681185]},"properties":{"category":"bakery","osm_id":9091101230}},{"type":"Feature","geometry":{"type":"Point","coordinates":[0.3482854,47.6512174]},"properties":{"category":"bakery","name":"Distributeur de baguettes","osm_id":13059326802}}]}

@@ -1,1 +1,1 @@
-{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[1.4221783,46.888382]},"properties":{"category":"repair","osm_id":14106989904}}]}
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[1.4157353,46.8868788]},"properties":{"category":"bakery","name":"Boulangerie Pâtisserie Sureau","osm_id":3114665735}},{"type":"Feature","geometry":{"type":"Point","coordinates":[1.4221783,46.888382]},"properties":{"category":"repair","osm_id":14106989904}}]}

@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[2.2557544,42.9955976]},"properties":{"category":"bakery","osm_id":1066047146}},{"type":"Feature","geometry":{"type":"Point","coordinates":[2.2213977,42.9345985]},"properties":{"category":"bakery","name":"Le fournil d'Esperaza","osm_id":3647864084}}]}

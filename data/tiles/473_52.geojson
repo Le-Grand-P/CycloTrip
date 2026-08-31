@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[5.2652918,47.3627334]},"properties":{"category":"bakery","osm_id":1416516046}},{"type":"Feature","geometry":{"type":"Point","coordinates":[5.2656286,47.3290134]},"properties":{"category":"bakery","name":"Au Pain d'Or","osm_id":4731294053}}]}

@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[2.3272072,48.0240527]},"properties":{"category":"bakery","osm_id":1297488424}},{"type":"Feature","geometry":{"type":"Point","coordinates":[2.3829516,48.0372489]},"properties":{"category":"bakery","name":"La Crocq","opening_hours":"Tu-Su 06:30-21:30","osm_id":8210104044}}]}

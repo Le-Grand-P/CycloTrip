@@ -1,1 +1,1 @@
-{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[5.9655105,46.6578057]},"properties":{"category":"repair","osm_id":14090128883}}]}
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[5.9034266,46.606205]},"properties":{"category":"bakery","osm_id":5591567038}},{"type":"Feature","geometry":{"type":"Point","coordinates":[5.9655105,46.6578057]},"properties":{"category":"repair","osm_id":14090128883}}]}

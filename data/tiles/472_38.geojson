@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[3.8179232,47.2888465]},"properties":{"category":"bakery","name":"Chez Petre","osm_id":2288862503}},{"type":"Feature","geometry":{"type":"Point","coordinates":[3.8184918,47.2892741]},"properties":{"category":"bakery","name":"Boulangerie Vermelin","osm_id":2288868096}}]}

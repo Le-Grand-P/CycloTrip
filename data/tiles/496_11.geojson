@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[1.1747774,49.6273347]},"properties":{"category":"bakery","name":"Boulangerie Patisserie","osm_id":4940930434}},{"type":"Feature","geometry":{"type":"Point","coordinates":[1.119406,49.674565]},"properties":{"category":"bakery","name":"Boulangerie Blondel","osm_id":13722595304}}]}

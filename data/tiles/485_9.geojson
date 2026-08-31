@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[0.9152672,48.5981716]},"properties":{"category":"bakery","name":"Fournil","osm_id":3454627965}},{"type":"Feature","geometry":{"type":"Point","coordinates":[0.9031574,48.5417873]},"properties":{"category":"bakery","name":"Boulangerie Touffet","osm_id":8745864988}}]}

@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[-1.5128481,47.0558057]},"properties":{"category":"bakery","name":"Vrignaud","osm_id":1769323844}},{"type":"Feature","geometry":{"type":"Point","coordinates":[-1.5803038,47.011682]},"properties":{"category":"bakery","name":"Le Fournil","osm_id":3772696391}}]}

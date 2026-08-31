@@ -1,1 +1,1 @@
-{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[7.1368239,44.0323885]},"properties":{"category":"repair","opening_hours":"24/7","osm_id":13640543252}}]}
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[7.1368239,44.0323885]},"properties":{"category":"repair","opening_hours":"24/7","osm_id":13640543252}},{"type":"Feature","geometry":{"type":"Point","coordinates":[7.1678737,44.0711472]},"properties":{"category":"bakery","name":"Le Chill","osm_id":13888425729}}]}

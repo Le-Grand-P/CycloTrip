@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[3.7457208,45.6155403]},"properties":{"category":"bakery","osm_id":1805541223}},{"type":"Feature","geometry":{"type":"Point","coordinates":[3.7090829,45.6485853]},"properties":{"category":"bakery","name":"La Boul'Anges","osm_id":14027698643}}]}

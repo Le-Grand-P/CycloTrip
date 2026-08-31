@@ -1,1 +1,1 @@
-{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[-1.4223131,47.5275291]},"properties":{"category":"repair","osm_id":10121318286}}]}
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[-1.402695,47.5585296]},"properties":{"category":"bakery","name":"Au Pain d'Antan","phone":"+33 2 28 50 44 67","osm_id":3446997957}},{"type":"Feature","geometry":{"type":"Point","coordinates":[-1.4223131,47.5275291]},"properties":{"category":"repair","osm_id":10121318286}}]}

@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[2.4924673,47.6204487]},"properties":{"category":"bakery","name":"Boulangerie Riotto","osm_id":3400786303}},{"type":"Feature","geometry":{"type":"Point","coordinates":[2.492144,47.6217596]},"properties":{"category":"bakery","name":"Boulangerie Pérot","osm_id":4375547589}}]}

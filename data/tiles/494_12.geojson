@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[1.2052084,49.4399627]},"properties":{"category":"bakery","osm_id":270922147}},{"type":"Feature","geometry":{"type":"Point","coordinates":[1.2398412,49.4079187]},"properties":{"category":"bakery","name":"La Croquise","osm_id":13953445201}}]}

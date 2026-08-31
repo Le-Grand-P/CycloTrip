@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[3.1559619,46.5852043]},"properties":{"category":"bakery","name":"La Panetière","osm_id":2639950768}},{"type":"Feature","geometry":{"type":"Point","coordinates":[3.1926089,46.5344086]},"properties":{"category":"bakery","name":"Boulangerie Patisserie","osm_id":3745651542}}]}

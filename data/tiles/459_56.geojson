@@ -1,1 +1,1 @@
-{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[5.6781817,45.9043359]},"properties":{"category":"compressed_air","osm_id":10018733795}}]}
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[5.6779542,45.9041973]},"properties":{"category":"bakery","name":"La Valromeysanne","osm_id":6812086338}},{"type":"Feature","geometry":{"type":"Point","coordinates":[5.6781817,45.9043359]},"properties":{"category":"compressed_air","osm_id":10018733795}}]}

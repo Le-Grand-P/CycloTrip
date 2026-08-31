@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[5.1675162,43.4751996]},"properties":{"category":"bakery","name":"Le Fournilde Berre","osm_id":10751407870}},{"type":"Feature","geometry":{"type":"Point","coordinates":[5.167648,43.4768265]},"properties":{"category":"bakery","name":"Au Fournil de l'Olivier","osm_id":10755865812}}]}

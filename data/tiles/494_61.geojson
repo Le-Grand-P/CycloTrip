@@ -1,1 +1,1 @@
-{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[6.1565229,49.4077276]},"properties":{"category":"repair","osm_id":11740828075}}]}
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[6.1594239,49.401188]},"properties":{"category":"bakery","name":"Forêt Noire","osm_id":5952582525}},{"type":"Feature","geometry":{"type":"Point","coordinates":[6.1565229,49.4077276]},"properties":{"category":"repair","osm_id":11740828075}}]}

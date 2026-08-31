@@ -1,1 +1,1 @@
-{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[3.8961756,47.4982914]},"properties":{"category":"compressed_air","osm_id":11277763561}}]}
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[3.8996068,47.4888753]},"properties":{"category":"bakery","name":"Amores Manuel","osm_id":4434584774}},{"type":"Feature","geometry":{"type":"Point","coordinates":[3.8961756,47.4982914]},"properties":{"category":"compressed_air","osm_id":11277763561}}]}

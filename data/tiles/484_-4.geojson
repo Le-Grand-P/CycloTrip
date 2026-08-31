@@ -1,1 +1,1 @@
-{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[-0.3330983,48.4186345]},"properties":{"category":"repair","name":"La Roue Libre","osm_id":3299426827}}]}
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[-0.3330983,48.4186345]},"properties":{"category":"repair","name":"La Roue Libre","osm_id":3299426827}},{"type":"Feature","geometry":{"type":"Point","coordinates":[-0.3379315,48.417706]},"properties":{"category":"bakery","name":"Virginie Patrick SAS","osm_id":9525122370}}]}

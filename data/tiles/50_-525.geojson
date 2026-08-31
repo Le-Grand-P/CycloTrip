@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[-52.4744121,5.0147238]},"properties":{"category":"bakery","name":"Pain Doré","osm_id":2164612344}},{"type":"Feature","geometry":{"type":"Point","coordinates":[-52.4649028,5.0033588]},"properties":{"category":"bakery","name":"Boulangerie Félix","osm_id":5485396267}}]}

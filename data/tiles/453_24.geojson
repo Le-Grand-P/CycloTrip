@@ -1,1 +1,1 @@
-{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[2.4992287,45.3989453]},"properties":{"category":"shop","osm_id":5059146674}}]}
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[2.4797418,45.3347326]},"properties":{"category":"bakery","name":"Maison Tible","osm_id":4135723290}},{"type":"Feature","geometry":{"type":"Point","coordinates":[2.4992287,45.3989453]},"properties":{"category":"shop","osm_id":5059146674}}]}

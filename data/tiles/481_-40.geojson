@@ -1,1 +1,1 @@
-{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[-3.9815731,48.193204]},"properties":{"category":"repair","osm_id":12961523799}}]}
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[-3.9815731,48.193204]},"properties":{"category":"repair","osm_id":12961523799}},{"type":"Feature","geometry":{"type":"Point","coordinates":[-3.92247,48.125166]},"properties":{"category":"bakery","name":"Le Fournil Ar Boem","website":"https://lefournilarboem.fr/","osm_id":14132849944}}]}

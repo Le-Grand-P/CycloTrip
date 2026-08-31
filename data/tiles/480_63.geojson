@@ -1,1 +1,1 @@
-{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[6.3045263,48.0850134]},"properties":{"category":"repair","opening_hours":"24/7","osm_id":11012625110}}]}
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[6.3045263,48.0850134]},"properties":{"category":"repair","opening_hours":"24/7","osm_id":11012625110}},{"type":"Feature","geometry":{"type":"Point","coordinates":[6.3455243,48.0858604]},"properties":{"category":"bakery","name":"L'Art du Pain","osm_id":13342966051}}]}

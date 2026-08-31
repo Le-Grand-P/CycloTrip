@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[1.0101329,43.1993113]},"properties":{"category":"bakery","name":"Boulangerie Patisserie","osm_id":2795103793}},{"type":"Feature","geometry":{"type":"Point","coordinates":[1.0091645,43.1983874]},"properties":{"category":"bakery","name":"La fournée martraise","osm_id":10691504107}}]}

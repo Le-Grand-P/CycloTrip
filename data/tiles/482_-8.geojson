@@ -1,1 +1,1 @@
-{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[-0.702529,48.2131115]},"properties":{"category":"repair","osm_id":12088598212}}]}
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[-0.7675865,48.2294684]},"properties":{"category":"bakery","name":"Boulangerie - Pâtisserie - Pizzeria","osm_id":8576313743}},{"type":"Feature","geometry":{"type":"Point","coordinates":[-0.702529,48.2131115]},"properties":{"category":"repair","osm_id":12088598212}}]}

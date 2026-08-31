@@ -1,1 +1,1 @@
-{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[5.1207495,43.9204806]},"properties":{"category":"repair","osm_id":12826685046}}]}
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[5.1472772,43.9953753]},"properties":{"category":"bakery","name":"Au Fournil de Venasque","opening_hours":"Tu-Su 07:30-13:00; Mo off","osm_id":2908212448}},{"type":"Feature","geometry":{"type":"Point","coordinates":[5.1207495,43.9204806]},"properties":{"category":"repair","osm_id":12826685046}}]}

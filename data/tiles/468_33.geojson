@@ -1,1 +1,1 @@
-{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[3.3217882,46.8361011]},"properties":{"category":"repair","osm_id":11055487258}}]}
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[3.3202984,46.8364705]},"properties":{"category":"bakery","name":"Boulangerie Jolivot Thomas","phone":"+33 3 86 30 76 50","osm_id":4340822238}},{"type":"Feature","geometry":{"type":"Point","coordinates":[3.3217882,46.8361011]},"properties":{"category":"repair","osm_id":11055487258}}]}

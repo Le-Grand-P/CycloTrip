@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[2.4863148,47.2321939]},"properties":{"category":"bakery","osm_id":2218991666}},{"type":"Feature","geometry":{"type":"Point","coordinates":[2.4176941,47.2039154]},"properties":{"category":"bakery","name":"Le Fournil de Saint-Martin","osm_id":8663146939}}]}

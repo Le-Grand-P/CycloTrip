@@ -1,1 +1,1 @@
-{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[-1.1955303,43.1044549]},"properties":{"category":"repair","osm_id":12115702328}}]}
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[-1.1945253,43.165225]},"properties":{"category":"bakery","name":"Sarçabal","osm_id":3697230962}},{"type":"Feature","geometry":{"type":"Point","coordinates":[-1.1955303,43.1044549]},"properties":{"category":"repair","osm_id":12115702328}}]}

@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[-0.8003172,46.149275]},"properties":{"category":"bakery","name":"Dépôt de pain","osm_id":6513232222}},{"type":"Feature","geometry":{"type":"Point","coordinates":[-0.8590465,46.165405]},"properties":{"category":"bakery","name":"Le Pain de Bouhet","osm_id":7416671897}}]}

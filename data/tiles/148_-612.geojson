@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[-61.1214493,14.8688222]},"properties":{"category":"bakery","name":"Boulangerie Chapentier","osm_id":3179255024}},{"type":"Feature","geometry":{"type":"Point","coordinates":[-61.122224,14.8681166]},"properties":{"category":"bakery","name":"Déli Nord","osm_id":3179298066}}]}

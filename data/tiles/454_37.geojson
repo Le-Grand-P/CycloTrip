@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[3.7249801,45.4127541]},"properties":{"category":"bakery","name":"Bordet","osm_id":5942477104}},{"type":"Feature","geometry":{"type":"Point","coordinates":[3.7260841,45.4805642]},"properties":{"category":"bakery","name":"La Panetière","osm_id":13805201263}}]}

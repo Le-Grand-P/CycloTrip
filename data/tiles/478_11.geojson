@@ -1,1 +1,1 @@
-{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[1.1125823,47.8427926]},"properties":{"category":"repair","osm_id":13951897554}}]}
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[1.1403136,47.8653929]},"properties":{"category":"bakery","name":"Boulangerie Chanteclaire","osm_id":13731831004}},{"type":"Feature","geometry":{"type":"Point","coordinates":[1.1125823,47.8427926]},"properties":{"category":"repair","osm_id":13951897554}}]}

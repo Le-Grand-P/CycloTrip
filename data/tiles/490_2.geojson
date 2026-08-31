@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[0.2540912,49.0407515]},"properties":{"category":"bakery","osm_id":13062287382}},{"type":"Feature","geometry":{"type":"Point","coordinates":[0.2965957,49.0538571]},"properties":{"category":"bakery","name":"L’artisan de Saint-Cyr","phone":"+33 2 18 27 00 61","osm_id":13698165385}}]}

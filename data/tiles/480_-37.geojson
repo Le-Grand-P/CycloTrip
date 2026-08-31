@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[-3.6453409,48.0484589]},"properties":{"category":"bakery","phone":"+33 2 97 34 01 66","osm_id":4890181084}},{"type":"Feature","geometry":{"type":"Point","coordinates":[-3.6439097,48.049151]},"properties":{"category":"bakery","name":"Boulangerie","osm_id":4893601680}}]}

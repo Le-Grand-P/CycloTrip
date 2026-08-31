@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[-4.3573843,48.2314447]},"properties":{"category":"bakery","osm_id":1909144778}},{"type":"Feature","geometry":{"type":"Point","coordinates":[-4.316983,48.2459209]},"properties":{"category":"bakery","opening_hours":"07:30-12:30; Tu off","osm_id":1910702080}}]}

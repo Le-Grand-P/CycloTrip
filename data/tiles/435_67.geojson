@@ -1,1 +1,1 @@
-{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[6.7859738,43.5413626]},"properties":{"category":"compressed_air","osm_id":11161621318}}]}
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[6.785789,43.5415439]},"properties":{"category":"bakery","name":"Marie Blachère","osm_id":7026706409}},{"type":"Feature","geometry":{"type":"Point","coordinates":[6.7859738,43.5413626]},"properties":{"category":"compressed_air","osm_id":11161621318}}]}

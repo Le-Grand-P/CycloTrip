@@ -1,1 +1,1 @@
-{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[4.4312015,46.4804938]},"properties":{"category":"compressed_air","osm_id":11289438533}}]}
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[4.4387899,46.4822219]},"properties":{"category":"bakery","name":"Au fournil Bonnetois","osm_id":7977708149}},{"type":"Feature","geometry":{"type":"Point","coordinates":[4.4312015,46.4804938]},"properties":{"category":"compressed_air","osm_id":11289438533}}]}

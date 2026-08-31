@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[-3.9461295,48.5197544]},"properties":{"category":"bakery","name":"Autret","opening_hours":"07:00-13:00,16:00-19:00","osm_id":2995412888}},{"type":"Feature","geometry":{"type":"Point","coordinates":[-3.9624725,48.5510902]},"properties":{"category":"bakery","osm_id":9532324709}}]}

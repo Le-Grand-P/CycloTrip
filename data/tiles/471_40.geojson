@@ -1,1 +1,1 @@
-{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[4.0572602,47.1980705]},"properties":{"category":"repair","osm_id":6723288282}}]}
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[4.0165114,47.1365562]},"properties":{"category":"bakery","name":"Boulangerie Pâtisserie Beurrier","phone":"+33 3 86 76 10 14","osm_id":2380355565}},{"type":"Feature","geometry":{"type":"Point","coordinates":[4.0572602,47.1980705]},"properties":{"category":"repair","osm_id":6723288282}}]}

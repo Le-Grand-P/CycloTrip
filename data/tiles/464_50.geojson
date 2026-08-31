@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[5.082395,46.459466]},"properties":{"category":"bakery","name":"La Fournée Bressane","osm_id":1395282219}},{"type":"Feature","geometry":{"type":"Point","coordinates":[5.079231,46.459737]},"properties":{"category":"bakery","osm_id":1395282660}}]}

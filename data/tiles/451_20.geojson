@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[2.0982,45.1379612]},"properties":{"category":"bakery","name":"Boulangerie Pâtisserie","osm_id":2406709612}},{"type":"Feature","geometry":{"type":"Point","coordinates":[2.0998915,45.1382952]},"properties":{"category":"bakery","name":"Artisan Boulanger","osm_id":8888171743}}]}

@@ -1,1 +1,1 @@
-{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[2.7042971,48.2407338]},"properties":{"category":"repair","osm_id":13169287992}}]}
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[2.7228339,48.2633886]},"properties":{"category":"bakery","name":"Brioche Dorée","osm_id":9216860717}},{"type":"Feature","geometry":{"type":"Point","coordinates":[2.7042971,48.2407338]},"properties":{"category":"repair","osm_id":13169287992}}]}

@@ -1,1 +1,1 @@
-{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[6.3511804,44.4113069]},"properties":{"category":"repair","osm_id":6959954380}}]}
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[6.3492806,44.4433135]},"properties":{"category":"bakery","name":"Le Moulin Ubayen","osm_id":3028114220}},{"type":"Feature","geometry":{"type":"Point","coordinates":[6.3511804,44.4113069]},"properties":{"category":"repair","osm_id":6959954380}}]}

@@ -1,1 +1,1 @@
-{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[-1.0907751,45.5521018]},"properties":{"category":"repair","osm_id":11962223319}}]}
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[-1.067316,45.5482286]},"properties":{"category":"bakery","name":"Au Gré des Saisons","osm_id":10847192271}},{"type":"Feature","geometry":{"type":"Point","coordinates":[-1.0907751,45.5521018]},"properties":{"category":"repair","osm_id":11962223319}}]}

@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[5.0194737,44.8996612]},"properties":{"category":"bakery","name":"Boulangerie La Véore","osm_id":3883072776}},{"type":"Feature","geometry":{"type":"Point","coordinates":[5.021615,44.871635]},"properties":{"category":"bakery","name":"Le Fournil de Montvendre","osm_id":3898843039}}]}

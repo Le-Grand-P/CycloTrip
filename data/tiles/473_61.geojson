@@ -1,1 +1,1 @@
-{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[6.1285713,47.329401]},"properties":{"category":"compressed_air","osm_id":12196484051}}]}
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[6.1090589,47.3473198]},"properties":{"category":"bakery","name":"Les Délices de Venise","osm_id":11947756207}},{"type":"Feature","geometry":{"type":"Point","coordinates":[6.1285713,47.329401]},"properties":{"category":"compressed_air","osm_id":12196484051}}]}

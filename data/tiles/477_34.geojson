@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[3.4104638,47.7565041]},"properties":{"category":"bakery","name":"Secret de Pain","osm_id":4081387353}},{"type":"Feature","geometry":{"type":"Point","coordinates":[3.4923219,47.751333]},"properties":{"category":"bakery","name":"Bisson Laurent","osm_id":4698218090}}]}

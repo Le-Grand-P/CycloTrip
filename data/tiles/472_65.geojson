@@ -1,1 +1,1 @@
-{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[6.5838259,47.2962551]},"properties":{"category":"shop","name":"Cycles Simonin","osm_id":6680222214}}]}
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[6.5838259,47.2962551]},"properties":{"category":"shop","name":"Cycles Simonin","osm_id":6680222214}},{"type":"Feature","geometry":{"type":"Point","coordinates":[6.5820637,47.2933391]},"properties":{"category":"bakery","osm_id":6680222294}}]}

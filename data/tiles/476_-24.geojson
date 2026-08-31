@@ -1,1 +1,1 @@
-{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[-2.3482839,47.6936485]},"properties":{"category":"repair","osm_id":13440038677}}]}
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[-2.3640193,47.6964218]},"properties":{"category":"bakery","name":"Boulanger patissier","osm_id":6897745507}},{"type":"Feature","geometry":{"type":"Point","coordinates":[-2.3482839,47.6936485]},"properties":{"category":"repair","osm_id":13440038677}}]}

@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[1.4982863,48.7961394]},"properties":{"category":"bakery","osm_id":2163661943}},{"type":"Feature","geometry":{"type":"Point","coordinates":[1.4408209,48.7856949]},"properties":{"category":"bakery","name":"Boulangerie d'Abondant","osm_id":8531729771}}]}

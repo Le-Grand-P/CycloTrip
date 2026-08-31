@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[0.0401611,46.4198109]},"properties":{"category":"bakery","osm_id":6634788956}},{"type":"Feature","geometry":{"type":"Point","coordinates":[0.0411102,46.4181914]},"properties":{"category":"bakery","name":"Le Fournil Gourmand","osm_id":8282168087}}]}

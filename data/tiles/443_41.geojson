@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[4.1287829,44.3022019]},"properties":{"category":"bakery","osm_id":3212180507}},{"type":"Feature","geometry":{"type":"Point","coordinates":[4.1537026,44.3392731]},"properties":{"category":"bakery","name":"Au Fournil de Saint-Paul","phone":"+33475398053","osm_id":6578443385}}]}

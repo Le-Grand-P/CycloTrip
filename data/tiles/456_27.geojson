@@ -1,1 +1,1 @@
-{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[2.7503465,45.6028177]},"properties":{"category":"repair","osm_id":13798127894}}]}
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[2.7327986,45.6509909]},"properties":{"category":"bakery","name":"Croq'En Bouche","osm_id":942943358}},{"type":"Feature","geometry":{"type":"Point","coordinates":[2.7503465,45.6028177]},"properties":{"category":"repair","osm_id":13798127894}}]}

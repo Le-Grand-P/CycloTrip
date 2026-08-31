@@ -1,1 +1,1 @@
-{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[5.6722599,43.9744134]},"properties":{"category":"repair","osm_id":6959954381}}]}
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[5.6374939,43.9316845]},"properties":{"category":"bakery","name":"Fournil","osm_id":2089557478}},{"type":"Feature","geometry":{"type":"Point","coordinates":[5.6722599,43.9744134]},"properties":{"category":"repair","osm_id":6959954381}}]}

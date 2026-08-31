@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[2.6988256,42.7726729]},"properties":{"category":"bakery","name":"Le Pain Gascon","phone":"+33 4 68 29 41 72","osm_id":11833724633}},{"type":"Feature","geometry":{"type":"Point","coordinates":[2.6997007,42.7725235]},"properties":{"category":"bakery","osm_id":13122994552}}]}

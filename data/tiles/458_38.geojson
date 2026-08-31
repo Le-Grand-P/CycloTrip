@@ -1,1 +1,1 @@
-{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[3.8126274,45.8560983]},"properties":{"category":"compressed_air","osm_id":9007884167}}]}
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[3.8126274,45.8560983]},"properties":{"category":"compressed_air","osm_id":9007884167}},{"type":"Feature","geometry":{"type":"Point","coordinates":[3.8914291,45.8837484]},"properties":{"category":"bakery","name":"Fournit Paul","osm_id":9025107261}}]}

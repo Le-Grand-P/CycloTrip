@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[55.6101641,-21.1535063]},"properties":{"category":"bakery","name":"Le sucre glace","osm_id":9340721893}},{"type":"Feature","geometry":{"type":"Point","coordinates":[55.6268878,-21.1345541]},"properties":{"category":"bakery","name":"L'Eskal Gourman","osm_id":9568532905}}]}

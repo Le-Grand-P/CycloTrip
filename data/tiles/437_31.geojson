@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[3.1900699,43.7070923]},"properties":{"category":"bakery","name":"Moulin des saveurs","osm_id":7705357113}},{"type":"Feature","geometry":{"type":"Point","coordinates":[3.137383,43.7666304]},"properties":{"category":"bakery","name":"Fournil de Fonbine","osm_id":10032069217}}]}

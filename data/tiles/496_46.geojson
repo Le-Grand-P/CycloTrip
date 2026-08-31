@@ -1,1 +1,1 @@
-{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[4.694831,49.6945383]},"properties":{"category":"shop","name":"Peugeot","osm_id":6066402790}}]}
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[4.694831,49.6945383]},"properties":{"category":"shop","name":"Peugeot","osm_id":6066402790}},{"type":"Feature","geometry":{"type":"Point","coordinates":[4.695218,49.6950269]},"properties":{"category":"bakery","name":"Boulangerie Anciaux","osm_id":11146200885}}]}

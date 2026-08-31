@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[1.9086782,43.7510889]},"properties":{"category":"bakery","osm_id":2108521290}},{"type":"Feature","geometry":{"type":"Point","coordinates":[1.9795484,43.7661954]},"properties":{"category":"bakery","name":"Boulangerie Ange","phone":"+33 5 32093625","osm_id":14002153688}}]}

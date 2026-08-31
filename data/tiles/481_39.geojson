@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[3.9985829,48.1931922]},"properties":{"category":"bakery","name":"Boulangerie","osm_id":2111266601}},{"type":"Feature","geometry":{"type":"Point","coordinates":[3.9705919,48.1184075]},"properties":{"category":"bakery","name":"Boulangerie Dupin","osm_id":4167893889}}]}

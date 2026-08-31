@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[4.2228263,49.1757421]},"properties":{"category":"bakery","name":"La case à pain","osm_id":3595164217}},{"type":"Feature","geometry":{"type":"Point","coordinates":[4.2434329,49.1198481]},"properties":{"category":"bakery","name":"Brioche Dorée","osm_id":10774022025}}]}

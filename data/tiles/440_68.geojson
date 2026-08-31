@@ -1,1 +1,1 @@
-{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[6.8537766,44.0887997]},"properties":{"category":"repair","osm_id":12956091066}}]}
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[6.8532392,44.08909]},"properties":{"category":"bakery","name":"Boulangerie artisanale","osm_id":9609240928}},{"type":"Feature","geometry":{"type":"Point","coordinates":[6.8537766,44.0887997]},"properties":{"category":"repair","osm_id":12956091066}}]}

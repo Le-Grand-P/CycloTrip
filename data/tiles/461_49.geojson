@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[4.9561262,46.1200955]},"properties":{"category":"bakery","osm_id":5085585083}},{"type":"Feature","geometry":{"type":"Point","coordinates":[4.9593925,46.1181727]},"properties":{"category":"bakery","name":"L'Archange","osm_id":10180603607}}]}

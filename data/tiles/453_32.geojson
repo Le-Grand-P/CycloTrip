@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[3.2695682,45.3852066]},"properties":{"category":"bakery","name":"Le pain de Thierry","osm_id":8920427889}},{"type":"Feature","geometry":{"type":"Point","coordinates":[3.2686445,45.3841361]},"properties":{"category":"bakery","osm_id":12455678787}}]}

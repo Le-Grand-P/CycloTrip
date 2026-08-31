@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[1.2184801,45.4014603]},"properties":{"category":"bakery","name":"Boulangerie Kieffer","osm_id":4936100836}},{"type":"Feature","geometry":{"type":"Point","coordinates":[1.2197614,45.4008203]},"properties":{"category":"bakery","name":"Ronde des pains","osm_id":5018517096}}]}

@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[5.9640497,46.5775097]},"properties":{"category":"bakery","name":"KSL","osm_id":7272599156}},{"type":"Feature","geometry":{"type":"Point","coordinates":[5.9557936,46.5762338]},"properties":{"category":"bakery","name":"Artisan Boulanger Patissier du Haut-Jura","osm_id":9490570813}}]}
