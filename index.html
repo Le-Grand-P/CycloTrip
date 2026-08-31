@@ -1,0 +1,3059 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>CycloTrip</title>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <style>
+    /* =========================================================
+       Design tokens — palette "vélo urbain/tourisme" : vert vif,
+       CTA quasi-noir, cartes blanches, gros arrondis. Inspiré des
+       références envoyées (badges pilule verts, boutons noirs,
+       tuile qui monte du bas).
+       ========================================================= */
+    :root {
+      --bg-app: #F4F5F1;
+      --surface: #FFFFFF;
+      --ink: #14181A;
+      --ink-soft: #5C6660;
+      --ink-faint: #98A199;
+      --border: #E6E8E1;
+      --brand: #7CB518;       /* vert vif */
+      --brand-dark: #5C8A11;
+      --brand-soft: #EAF4D9;
+      --cta: #14181A;         /* boutons noirs, façon référence */
+      --cta-hover: #2A302E;
+      --danger: #C0392B;
+      --shop: #2E7D32;
+      --repair: #F57F17;
+      --water: #1E88E5;
+      --lodging: #8E24AA;
+      --radius-xl: 22px;
+      --radius-lg: 16px;
+      --radius-md: 10px;
+      --radius-sm: 7px;
+      --shadow-float: 0 10px 28px rgba(20, 24, 26, 0.18), 0 2px 8px rgba(20, 24, 26, 0.08);
+      --shadow-card: 0 1px 2px rgba(20, 24, 26, 0.05);
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      --ease: cubic-bezier(.4, 0, .2, 1);
+      --nav-height: 66px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: var(--font-ui);
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button, input { font-family: inherit; }
+    button { -webkit-tap-highlight-color: transparent; }
+    button:focus-visible, input:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+
+    #map {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 100%;
+      background: #E8E6DC;
+    }
+
+    /* ---------- Fond de carte : pilule segmentée en haut à gauche ---------- */
+    #basemap-toggle {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      z-index: 1000;
+      background: var(--surface);
+      border-radius: 999px;
+      display: flex;
+      padding: 3px;
+      gap: 2px;
+      box-shadow: var(--shadow-float);
+    }
+    #basemap-toggle button {
+      border: none;
+      background: transparent;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--ink-soft);
+      border-radius: 999px;
+      transition: background 0.18s var(--ease), color 0.18s var(--ease);
+    }
+    #basemap-toggle button.active {
+      background: var(--brand);
+      color: white;
+    }
+
+    /* ---------- Boutons flottants ronds (locate, etc.) ---------- */
+    .map-fab {
+      position: absolute;
+      z-index: 1001;
+      background: var(--surface);
+      border: none;
+      border-radius: 999px;
+      width: 42px;
+      height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: var(--shadow-float);
+      color: var(--ink);
+      transition: background 0.15s var(--ease), transform 0.1s var(--ease);
+    }
+    .map-fab:hover { background: var(--brand-soft); }
+    .map-fab:active { transform: scale(0.94); }
+    .map-fab svg { width: 20px; height: 20px; }
+    #locate-btn { bottom: calc(var(--nav-height) + 70px); right: 14px; }
+    #locate-btn.active { background: var(--water); color: white; }
+
+    /* ---------- Profil de dénivelé mini, intégré au panneau Trace ---------- */
+    #elevation-mini-card {
+      margin-top: 14px;
+      padding: 10px 10px 8px;
+      background: var(--bg-app);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: border-color 0.15s var(--ease);
+    }
+    #elevation-mini-card:hover { border-color: var(--brand); }
+    #elevation-mini-svg { width: 100%; height: 50px; display: block; }
+    #elevation-mini-line { stroke: var(--brand); }
+    .elevation-mini-hint { font-size: 10.5px; color: var(--ink-faint); text-align: center; margin-top: 4px; font-weight: 600; }
+
+    /* ---------- Profil de dénivelé agrandi ---------- */
+    #elevation-panel {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 220px;
+      background: var(--surface);
+      box-shadow: 0 -8px 24px rgba(20, 24, 26, 0.2);
+      z-index: 1400;
+      padding: 12px 16px;
+      box-sizing: border-box;
+      border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+      touch-action: none;
+      display: none;
+    }
+    #elevation-panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12.5px;
+      margin-bottom: 6px;
+    }
+    #elevation-panel-info { font-weight: 700; }
+    #elevation-close-btn {
+      border: none;
+      background: var(--bg-app);
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      cursor: pointer;
+      color: var(--ink-soft);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #elevation-close-btn svg { width: 14px; height: 14px; }
+    #elevation-svg { width: 100%; height: 165px; cursor: crosshair; }
+
+    /* ---------- Navigation flottante du bas ---------- */
+    #bottom-nav {
+      position: absolute;
+      left: 14px;
+      right: 14px;
+      bottom: 14px;
+      z-index: 1300;
+      background: var(--surface);
+      border-radius: 999px;
+      box-shadow: var(--shadow-float);
+      height: var(--nav-height);
+      display: flex;
+      align-items: stretch;
+      padding: 6px;
+      gap: 4px;
+    }
+    .nav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      border: none;
+      background: transparent;
+      border-radius: 999px;
+      cursor: pointer;
+      color: var(--ink-faint);
+      font-size: 10px;
+      font-weight: 700;
+      transition: background 0.18s var(--ease), color 0.18s var(--ease);
+    }
+    .nav-item svg { width: 20px; height: 20px; }
+    .nav-item.active { background: var(--brand-soft); color: var(--brand-dark); }
+
+    /* ---------- Tuile qui monte du bas ---------- */
+    #sheet-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 1100;
+      background: rgba(20, 24, 26, 0.35);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s var(--ease);
+    }
+    #sheet-overlay.open { opacity: 1; pointer-events: auto; }
+
+    #bottom-sheet {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 1200;
+      background: var(--surface);
+      border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+      box-shadow: var(--shadow-float);
+      padding: 10px 18px calc(var(--nav-height) + 22px);
+      max-height: 72vh;
+      overflow-y: auto;
+      transform: translateY(100%);
+      transition: transform 0.3s var(--ease);
+    }
+    #bottom-sheet.open { transform: translateY(0); }
+    #bottom-sheet > * { flex-shrink: 0; }
+
+    #sheet-handle {
+      width: 40px;
+      height: 4px;
+      border-radius: 2px;
+      background: var(--border);
+      margin: 4px auto 14px;
+    }
+
+    .sheet-panel { display: none; }
+    .sheet-panel.active { display: block; }
+
+    .sheet-title {
+      font-size: 17px;
+      font-weight: 800;
+      margin: 0 0 4px;
+      color: var(--ink);
+    }
+    .sheet-subtitle {
+      font-size: 12.5px;
+      color: var(--ink-soft);
+      margin: 0 0 16px;
+      line-height: 1.4;
+    }
+
+    .panel-eyebrow {
+      font-size: 10.5px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--ink-faint);
+    }
+
+    /* ---------- Composants partagés ---------- */
+    .btn-block {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      width: 100%;
+      font-size: 13px;
+      font-weight: 700;
+      border-radius: 999px;
+      padding: 13px 14px;
+      cursor: pointer;
+      border: none;
+      transition: background 0.15s var(--ease), transform 0.1s var(--ease), opacity 0.15s var(--ease);
+    }
+    .btn-block:active { transform: scale(0.98); }
+    .btn-block svg { width: 16px; height: 16px; flex-shrink: 0; }
+    .btn-cta { background: var(--cta); color: white; }
+    .btn-cta:hover { background: var(--cta-hover); }
+    .btn-cta:disabled { background: var(--border); color: var(--ink-faint); cursor: not-allowed; }
+    .btn-outline { background: white; color: var(--ink); border: 1.5px solid var(--border); }
+    .btn-outline:hover { background: var(--bg-app); }
+
+    .file-input-row { position: relative; margin-bottom: 10px; }
+    .file-input-row input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+    .file-input-label {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      width: 100%; padding: 14px; border: 1.5px dashed var(--border);
+      border-radius: var(--radius-lg); color: var(--ink-soft); font-size: 13px; font-weight: 700;
+      background: var(--bg-app); transition: border-color 0.15s var(--ease), color 0.15s var(--ease), background 0.15s var(--ease);
+    }
+    .file-input-row:hover .file-input-label { border-color: var(--brand); color: var(--brand-dark); background: var(--brand-soft); }
+    .file-input-label svg { width: 17px; height: 17px; }
+
+    .status-text { font-size: 12px; color: var(--ink-soft); margin-top: 8px; line-height: 1.4; }
+
+    /* Chips de filtre (case à cocher stylée en pilule) */
+    .chip-row { display: flex; flex-wrap: wrap; gap: 7px; margin: 10px 0; }
+    .chip-row label {
+      display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none;
+      font-size: 12px; font-weight: 600; color: var(--ink-soft);
+      padding: 7px 12px; border-radius: 999px; border: 1.5px solid var(--border); background: white;
+      transition: background 0.15s var(--ease), border-color 0.15s var(--ease), color 0.15s var(--ease);
+    }
+    .chip-row label:has(input:checked) { background: var(--brand-soft); border-color: var(--brand); color: var(--brand-dark); }
+    .chip-row input[type="checkbox"] { position: absolute; opacity: 0; width: 0; height: 0; }
+    .chip-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+    .master-toggle-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 4px; border-bottom: 1px solid var(--border); margin-bottom: 4px;
+    }
+    .master-toggle-row span { font-size: 13.5px; font-weight: 700; }
+
+    /* Interrupteur simple */
+    .switch { position: relative; width: 42px; height: 24px; flex-shrink: 0; }
+    .switch input { position: absolute; opacity: 0; width: 100%; height: 100%; cursor: pointer; margin: 0; }
+    .switch-track {
+      position: absolute; inset: 0; background: var(--border); border-radius: 999px;
+      transition: background 0.18s var(--ease);
+    }
+    .switch-track::after {
+      content: ''; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px;
+      background: white; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+      transition: transform 0.18s var(--ease);
+    }
+    .switch input:checked + .switch-track { background: var(--brand); }
+    .switch input:checked + .switch-track::after { transform: translateX(18px); }
+
+    .field-label { font-size: 12px; font-weight: 700; color: var(--ink-soft); margin: 12px 0 6px; display: block; }
+    .text-input {
+      width: 100%; padding: 11px 12px; border: 1.5px solid var(--border); border-radius: var(--radius-md);
+      font-size: 13px; color: var(--ink); background: white;
+    }
+    .api-key-note { font-size: 11px; color: var(--ink-faint); line-height: 1.5; margin-top: 6px; }
+    .api-key-note a { color: var(--brand-dark); font-weight: 700; }
+    .api-key-saved-badge { font-size: 11px; font-weight: 700; color: var(--brand-dark); margin-top: 6px; display: none; }
+
+    /* ---------- Panneau Points d'intérêt : sections empilées ---------- */
+    .poi-section {
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .poi-section-last { border-bottom: none; padding-bottom: 4px; }
+    .poi-section .master-toggle-row { border-bottom: none; padding: 0 0 4px; margin-bottom: 8px; }
+    .poi-section .field-label { margin-top: 10px; }
+
+    /* ---------- Plusieurs jours : sélecteur de mode + config ---------- */
+    #dayplan-mode-select { display: flex; gap: 8px; margin-bottom: 14px; }
+    .dayplan-mode-btn {
+      flex: 1;
+      font-size: 12.5px;
+      font-weight: 700;
+      border: 1.5px solid var(--border);
+      background: white;
+      color: var(--ink-soft);
+      border-radius: var(--radius-lg);
+      padding: 12px 6px;
+      cursor: pointer;
+      transition: background 0.15s var(--ease), border-color 0.15s var(--ease), color 0.15s var(--ease);
+    }
+    .dayplan-mode-btn.active { background: var(--brand); color: white; border-color: var(--brand); }
+
+    .config-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin: 10px 0;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--ink-soft);
+    }
+    .config-row input[type="number"], .config-row input[type="date"], .config-row input[type="time"] {
+      padding: 8px 10px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 12.5px;
+      color: var(--ink);
+      background: white;
+    }
+    .config-row input[type="number"] { width: 60px; }
+
+    .weather-hint { font-size: 11px; color: var(--ink-faint); margin: -4px 0 12px; line-height: 1.5; }
+
+    #dayplan-results, #weather-results { margin-top: 10px; }
+
+    .day-card { border-top: 1px solid var(--border); padding: 12px 0; }
+    .day-card-header { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 13px; }
+    .day-card-badge {
+      width: 22px; height: 22px; border-radius: 50%;
+      color: white; font-size: 11px; font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .day-card-dist { font-size: 11.5px; color: var(--brand-dark); font-weight: 700; margin-left: auto; }
+    .day-card-endpoint { font-size: 12px; color: var(--ink-soft); margin: 6px 0 5px 30px; }
+    .day-card-select {
+      width: calc(100% - 30px);
+      margin-left: 30px;
+      font-size: 12px;
+      padding: 7px 8px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: white;
+      color: var(--ink);
+    }
+    .day-card-detail-toggle {
+      margin: 8px 0 0 30px;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--brand-dark);
+      cursor: pointer;
+      user-select: none;
+    }
+    .day-card-detail {
+      margin: 8px 0 0 30px;
+      font-size: 12px;
+      color: var(--ink-soft);
+    }
+
+    .day-card.selected {
+      background: var(--brand-soft);
+      border-radius: var(--radius-md);
+      margin: 0 -10px;
+      padding: 12px 10px;
+      border-top-color: transparent;
+    }
+    .day-select-btn {
+      margin: 8px 0 0 30px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--brand-dark);
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+    .day-stats {
+      display: flex;
+      gap: 14px;
+      margin: 8px 0 0 30px;
+      font-size: 11.5px;
+      color: var(--ink-soft);
+      font-weight: 600;
+    }
+    .day-stats span { display: flex; align-items: center; gap: 4px; }
+
+    #around-me-results { margin-top: 8px; }
+    .around-me-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 9px 0;
+      border-top: 1px solid var(--border);
+      cursor: pointer;
+    }
+    .around-me-item-name { font-size: 12.5px; font-weight: 700; color: var(--ink); }
+    .around-me-item-type { font-size: 11px; color: var(--ink-faint); }
+    .around-me-item-dist { font-size: 11.5px; font-weight: 700; color: var(--brand-dark); white-space: nowrap; }
+
+    .weather-day-title {
+      font-weight: 800;
+      font-size: 12.5px;
+      color: var(--brand-dark);
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+    .weather-checkpoint {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      padding: 7px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .weather-cp-time { font-weight: 700; width: 40px; flex-shrink: 0; }
+    .weather-cp-icon { font-size: 16px; width: 20px; flex-shrink: 0; text-align: center; }
+    .weather-cp-detail { flex: 1; color: var(--ink-soft); }
+    .weather-cp-km { font-size: 10.5px; color: var(--ink-faint); white-space: nowrap; }
+    .weather-cp-na { color: var(--ink-faint); font-style: italic; }
+
+    /* ---------- Popups Leaflet ---------- */
+    .poi-popup { font-family: var(--font-ui); max-width: 220px; }
+    .poi-popup h4 { margin: 0 0 4px; font-size: 14px; color: var(--ink); }
+    .poi-popup p { margin: 2px 0; font-size: 12px; color: var(--ink-soft); }
+    .poi-popup a { font-size: 12px; color: var(--brand-dark); font-weight: 700; }
+    .popup-assign-btn {
+      display: block;
+      width: 100%;
+      margin-top: 8px;
+      padding: 7px 8px;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: white;
+      background: var(--brand);
+      border: none;
+      border-radius: 999px;
+      cursor: pointer;
+    }
+    .popup-assign-btn:hover { background: var(--brand-dark); }
+
+    #app-version {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      z-index: 999;
+      font-size: 9.5px;
+      color: var(--ink-faint);
+      background: rgba(255, 255, 255, 0.8);
+      padding: 3px 8px;
+      border-radius: 999px;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="map"></div>
+
+  <div id="basemap-toggle">
+    <button id="btn-cyclosm" class="active">CyclOSM</button>
+    <button id="btn-otm">OpenTopo</button>
+  </div>
+
+  <div id="app-version">build 2026-08-27-18 — relecture complète : correctifs et optimisations</div>
+
+  <div id="elevation-panel">
+    <div id="elevation-panel-header">
+      <span id="elevation-panel-info">Profil de dénivelé</span>
+      <button id="elevation-close-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
+    <svg id="elevation-svg" viewBox="0 0 1000 165" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="elevation-fill-gradient" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#7CB518" stop-opacity="0.28" />
+          <stop offset="100%" stop-color="#7CB518" stop-opacity="0" />
+        </linearGradient>
+      </defs>
+      <polygon id="elevation-fill" points="" fill="url(#elevation-fill-gradient)" />
+      <polyline id="elevation-line" points="" fill="none" stroke="#7CB518" stroke-width="2" vector-effect="non-scaling-stroke" />
+      <line id="elevation-cursor-line" x1="0" y1="0" x2="0" y2="165" stroke="#1E88E5" stroke-width="1" vector-effect="non-scaling-stroke" style="display:none;" />
+      <circle id="elevation-cursor-dot" r="4" fill="#1E88E5" stroke="white" stroke-width="1.5" style="display:none;" />
+    </svg>
+  </div>
+
+  <button id="locate-btn" class="map-fab" title="Ma position">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M12 2v3M12 19v3M2 12h3M19 12h3"></path></svg>
+  </button>
+
+  <div id="sheet-overlay"></div>
+
+  <div id="bottom-sheet">
+    <div id="sheet-handle"></div>
+
+    <!-- ===================== Panneau : Trace ===================== -->
+    <div class="sheet-panel active" id="panel-trace">
+      <h3 class="sheet-title">Trace GPX</h3>
+      <p class="sheet-subtitle">Importe ton itinéraire pour l'afficher sur la carte et voir son profil de dénivelé.</p>
+
+      <div class="file-input-row">
+        <input type="file" id="gpx-input" accept=".gpx" />
+        <label for="gpx-input" class="file-input-label">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+          Importer un fichier GPX
+        </label>
+      </div>
+      <button id="gpx-clear" class="btn-block btn-outline" style="display:none;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+        Retirer la trace
+      </button>
+      <div id="gpx-status" class="status-text"></div>
+
+      <div id="elevation-mini-card" style="display:none;">
+        <svg id="elevation-mini-svg" viewBox="0 0 300 50" preserveAspectRatio="none">
+          <polyline id="elevation-mini-line" points="" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" />
+        </svg>
+        <div class="elevation-mini-hint">Profil de dénivelé — toucher pour agrandir</div>
+      </div>
+
+      <div id="offline-export-card" style="display:none;">
+        <span class="panel-eyebrow" style="margin-top:14px; display:block;">Export hors-ligne</span>
+        <div class="config-row">
+          <label for="offline-buffer">Largeur du corridor</label>
+          <input type="range" id="offline-buffer" min="1" max="5" step="1" value="2" />
+        </div>
+        <div id="offline-buffer-label" class="status-text" style="margin-top:-8px;">±2 km (4 km de large)</div>
+        <button id="offline-download-btn" class="btn-block btn-cta" style="margin-top:8px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          Télécharger pour hors-ligne
+        </button>
+        <div id="offline-download-status" class="status-text"></div>
+      </div>
+    </div>
+
+    <!-- ===================== Panneau : Points d'intérêt (regroupé) ===================== -->
+    <div class="sheet-panel" id="panel-poi">
+      <h3 class="sheet-title">Points d'intérêt</h3>
+      <p class="sheet-subtitle">Tout ce qui compte le long de la route — zoome sur la carte pour charger les points.</p>
+
+      <div class="poi-section">
+        <div class="master-toggle-row">
+          <span>🔧 Ateliers vélo</span>
+          <label class="switch">
+            <input type="checkbox" id="toggle-ateliers" checked />
+            <span class="switch-track"></span>
+          </label>
+        </div>
+        <div class="chip-row" id="ateliers-filters">
+          <label><input type="checkbox" class="ateliers-filter" value="shop" checked /><span class="chip-dot" style="background:#2E7D32"></span>Magasins vélo</label>
+          <label><input type="checkbox" class="ateliers-filter" value="repair" checked /><span class="chip-dot" style="background:#F57F17"></span>Stations de réparation</label>
+          <label><input type="checkbox" class="ateliers-filter" value="compressed_air" checked /><span class="chip-dot" style="background:#00897B"></span>Gonflage</label>
+          <label><input type="checkbox" class="ateliers-filter" value="wash" checked /><span class="chip-dot" style="background:#5C6BC0"></span>Lavage</label>
+          <label><input type="checkbox" class="ateliers-filter" value="tube_vending" checked /><span class="chip-dot" style="background:#6D4C41"></span>Distributeur de chambres à air</label>
+        </div>
+        <div id="ateliers-status" class="status-text">Zoome pour charger les points (niveau 13+)</div>
+        <button id="around-me-btn" class="btn-block btn-outline" style="margin-top:10px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M12 2v3M12 19v3M2 12h3M19 12h3"></path></svg>
+          Shops vélo ou bornes de réparation autour de moi
+        </button>
+        <div id="around-me-status" class="status-text"></div>
+        <div id="around-me-results"></div>
+      </div>
+
+      <div class="poi-section">
+        <div class="master-toggle-row">
+          <span>💧 Points d'eau</span>
+          <label class="switch">
+            <input type="checkbox" id="toggle-eau" checked />
+            <span class="switch-track"></span>
+          </label>
+        </div>
+        <div id="eau-status" class="status-text">Zoome pour charger les points (niveau 13+)</div>
+      </div>
+
+      <div class="poi-section poi-section-last">
+        <label class="field-label" for="datatourisme-key" style="margin-top:0;">Clé API DATAtourisme</label>
+        <input type="text" id="datatourisme-key" class="text-input" placeholder="Colle ta clé ici" />
+        <div class="api-key-note">
+          Gratuite sur simple inscription (nom, email) —
+          <a href="https://www.datatourisme.fr/utiliser-les-donnees" target="_blank" rel="noopener">demander une clé →</a>
+        </div>
+        <div class="api-key-saved-badge" id="api-key-saved-badge">✓ Clé enregistrée sur cet appareil</div>
+
+        <div class="master-toggle-row" style="margin-top:14px;">
+          <span>🏨 Hébergements</span>
+          <label class="switch">
+            <input type="checkbox" id="toggle-hebergements" checked />
+            <span class="switch-track"></span>
+          </label>
+        </div>
+        <div class="master-toggle-row">
+          <span>🍽️ Restaurants</span>
+          <label class="switch">
+            <input type="checkbox" id="toggle-restaurants" checked />
+            <span class="switch-track"></span>
+          </label>
+        </div>
+        <div id="hebergements-status" class="status-text">Zoome pour charger les points (niveau 12+)</div>
+      </div>
+    </div>
+
+    <!-- ===================== Panneau : Plusieurs jours ===================== -->
+    <div class="sheet-panel" id="panel-dayplan">
+      <h3 class="sheet-title">Plusieurs jours</h3>
+      <p class="sheet-subtitle">Découpe ton itinéraire en étapes quotidiennes, avec ou sans recherche d'hébergement.</p>
+
+      <div id="dayplan-mode-select">
+        <button id="dayplan-mode-hebergements" class="dayplan-mode-btn">🏨 Hébergements</button>
+        <button id="dayplan-mode-libre" class="dayplan-mode-btn">🚴 Étapes libres</button>
+      </div>
+
+      <div id="dayplan-config" style="display:none;">
+        <div class="config-row">
+          <label for="dayplan-nbdays">Nombre de jours</label>
+          <input type="number" id="dayplan-nbdays" min="1" max="14" value="3" />
+        </div>
+        <button id="dayplan-compute-btn" class="btn-block btn-cta">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+          Calculer
+        </button>
+        <button id="dayplan-reset-btn" class="btn-block btn-outline" style="display:none; margin-top:8px;">← Changer de mode</button>
+      </div>
+      <div id="dayplan-status" class="status-text"></div>
+      <div id="dayplan-results"></div>
+    </div>
+
+    <!-- ===================== Panneau : Météo ===================== -->
+    <div class="sheet-panel" id="panel-weather">
+      <h3 class="sheet-title">Météo</h3>
+      <p class="sheet-subtitle">Prévisions Météo-France le long de la trace, calculées selon ta vitesse de pédalage.</p>
+
+      <div class="config-row">
+        <label for="weather-start-date">Date de départ</label>
+        <input type="date" id="weather-start-date" />
+      </div>
+      <div class="config-row">
+        <label for="weather-start-time">Heure de départ (jour 1)</label>
+        <input type="time" id="weather-start-time" value="08:00" />
+      </div>
+      <p class="weather-hint">Les autres jours partent par défaut à 8h00. Vitesse estimée : 15 km/h, avec une pause déjeuner d'1h vers midi.</p>
+      <button id="weather-compute-btn" class="btn-block" style="background:var(--water); color:white;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a4.5 4.5 0 1 0-1.44-8.765 5 5 0 1 0-9.516 3.049A4 4 0 1 0 8 19h9.5z"></path></svg>
+        Calculer les prévisions
+      </button>
+      <div id="weather-status" class="status-text"></div>
+      <div id="weather-results"></div>
+    </div>
+  </div>
+
+  <nav id="bottom-nav">
+    <button class="nav-item active" data-panel="trace">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+      Trace
+    </button>
+    <button class="nav-item" data-panel="poi">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+      Points d'intérêt
+    </button>
+    <button class="nav-item" data-panel="dayplan">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+      Jours
+    </button>
+    <button class="nav-item" data-panel="weather">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a4.5 4.5 0 1 0-1.44-8.765 5 5 0 1 0-9.516 3.049A4 4 0 1 0 8 19h9.5z"></path></svg>
+      Météo
+    </button>
+  </nav>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/2.1.2/gpx.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6.5.0/turf.min.js"></script>
+  <script>
+    // =========================================================
+    // Carte de base
+    // =========================================================
+    const map = L.map('map', { zoomControl: false }).setView([45.188, 5.724], 13); // Grenoble par défaut
+    L.control.zoom({ position: 'bottomleft' }).addTo(map);
+
+    const cyclosm = L.tileLayer('https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors, style &copy; CyclOSM',
+      maxZoom: 20,
+      subdomains: 'abc'
+    });
+    const openTopoMap = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+      attribution: 'Map data: &copy; OpenStreetMap contributors, SRTM | Map style: &copy; OpenTopoMap (CC-BY-SA)',
+      maxZoom: 17,
+      subdomains: 'abc'
+    });
+    cyclosm.addTo(map);
+
+    let currentBasemapId = 'cyclosm';
+    const btnCyclosm = document.getElementById('btn-cyclosm');
+    const btnOtm = document.getElementById('btn-otm');
+
+    function setActiveBasemap(which) {
+      currentBasemapId = which;
+      if (which === 'cyclosm') {
+        if (map.hasLayer(openTopoMap)) map.removeLayer(openTopoMap);
+        if (!map.hasLayer(cyclosm)) cyclosm.addTo(map);
+        btnCyclosm.classList.add('active');
+        btnOtm.classList.remove('active');
+      } else {
+        if (map.hasLayer(cyclosm)) map.removeLayer(cyclosm);
+        if (!map.hasLayer(openTopoMap)) openTopoMap.addTo(map);
+        btnOtm.classList.add('active');
+        btnCyclosm.classList.remove('active');
+      }
+    }
+    btnCyclosm.addEventListener('click', () => setActiveBasemap('cyclosm'));
+    btnOtm.addEventListener('click', () => setActiveBasemap('otm'));
+
+    // =========================================================
+    // Utilitaire réseau partagé — tente un fetch direct, puis un repli via
+    // proxy CORS public en cas d'échec. Même logique éprouvée que sur
+    // EasyBiv : un service tiers gratuit sans garantie de disponibilité,
+    // acceptable pour un proto, pas pour de la production.
+    // =========================================================
+    async function fetchJsonWithFallback(url, options) {
+      try {
+        const response = await fetch(url, options);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return await response.json();
+      } catch (directErr) {
+        console.warn('[fetch] échec direct, tentative via proxy CORS :', url, directErr.message);
+        const proxiedUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+        // NB: un proxy public générique ne relaie pas forcément les en-têtes
+        // personnalisés (ex. X-API-Key) — ce repli est donc surtout utile
+        // pour les appels sans authentification (Overpass).
+        const response = await fetch(proxiedUrl);
+        if (!response.ok) throw new Error(`HTTP ${response.status} (via proxy)`);
+        return await response.json();
+      }
+    }
+
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str || '';
+      return div.innerHTML;
+    }
+
+    // =========================================================
+    // Cache géographique par couche — un mouvement mineur de la carte ne
+    // doit pas redéclencher un appel réseau si la zone visible est déjà
+    // entièrement couverte par la dernière zone chargée. On mémorise, par
+    // couche, la zone réellement interrogée (avec une marge) et une
+    // "signature" des filtres actifs au moment du chargement — si les
+    // filtres changent, le cache n'est plus valable même si la zone l'est.
+    // =========================================================
+    const AREA_CACHE_PADDING = 1.0; // marge ajoutée autour de la zone visible au moment du fetch (100%)
+
+    function isViewportCovered(cacheEntry, currentBounds, signature) {
+      return !!cacheEntry && cacheEntry.signature === signature && cacheEntry.bounds.contains(currentBounds);
+    }
+
+    // =========================================================
+    // Navigation par tuile du bas — un seul panneau visible à la fois,
+    // la tuile s'ouvre/se ferme au clic sur l'icône active.
+    // =========================================================
+    const sheetOverlay = document.getElementById('sheet-overlay');
+    const bottomSheet = document.getElementById('bottom-sheet');
+    const navItems = Array.from(document.querySelectorAll('.nav-item'));
+    const sheetPanels = Array.from(document.querySelectorAll('.sheet-panel'));
+    let activePanel = 'trace';
+    let sheetOpen = false;
+
+    function openSheet(panelName) {
+      sheetPanels.forEach(p => p.classList.toggle('active', p.id === `panel-${panelName}`));
+      navItems.forEach(n => n.classList.toggle('active', n.dataset.panel === panelName));
+      activePanel = panelName;
+      sheetOpen = true;
+      bottomSheet.classList.add('open');
+      sheetOverlay.classList.add('open');
+    }
+
+    function closeSheet() {
+      sheetOpen = false;
+      bottomSheet.classList.remove('open');
+      sheetOverlay.classList.remove('open');
+    }
+
+    navItems.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        const panelName = btn.dataset.panel;
+        if (sheetOpen && activePanel === panelName) {
+          closeSheet();
+        } else {
+          openSheet(panelName);
+        }
+      });
+    });
+
+    sheetOverlay.addEventListener('click', closeSheet);
+
+    // Panneau "Trace" ouvert par défaut au premier chargement, pour guider
+    // l'utilisateur vers l'import GPX.
+    openSheet('trace');
+
+    // =========================================================
+    // Import GPX + profil de dénivelé (même logique qu'EasyBiv)
+    // =========================================================
+    const gpxInput = document.getElementById('gpx-input');
+    const gpxClearBtn = document.getElementById('gpx-clear');
+    const gpxStatusEl = document.getElementById('gpx-status');
+    let currentGpxLayer = null;
+    let currentGpxObjectUrl = null;
+    let currentTrackLine = null;
+    // Longueur totale mise en cache : turf.length() reparcourt toute la
+    // trace (~10 ms pour 5 000 points) et était appelée jusque dans la
+    // boucle de glissement des marqueurs, plusieurs fois par seconde.
+    let currentTrackTotalKm = 0;
+
+    const elevationMiniCard = document.getElementById('elevation-mini-card');
+    const elevationMiniLine = document.getElementById('elevation-mini-line');
+    const elevationPanel = document.getElementById('elevation-panel');
+    const elevationPanelInfo = document.getElementById('elevation-panel-info');
+    const elevationCloseBtn = document.getElementById('elevation-close-btn');
+    const elevationSvg = document.getElementById('elevation-svg');
+    const elevationLine = document.getElementById('elevation-line');
+    const elevationFill = document.getElementById('elevation-fill');
+    const elevationCursorLine = document.getElementById('elevation-cursor-line');
+    const elevationCursorDot = document.getElementById('elevation-cursor-dot');
+    let elevationProfile = null;
+    let elevationCursorMarker = null;
+
+    // Associe à chaque point du profil d'altitude sa position géographique.
+    //
+    // Version linéaire volontaire : l'implémentation naïve appelait
+    // turf.along() une fois par point du profil, et chaque appel reparcourt
+    // la trace entière depuis son début — soit un coût quadratique
+    // (mesuré : ~800 ms pour 4 000 points sur une machine de bureau, donc
+    // plusieurs secondes de blocage sur mobile pour une longue trace).
+    // Ici, on calcule les distances cumulées en une passe, puis on avance
+    // un curseur unique le long de la trace : les distances du profil sont
+    // déjà triées, donc un seul parcours suffit pour tout le monde.
+    function buildElevationProfile(gpxLayer, line) {
+      if (typeof gpxLayer.get_elevation_data !== 'function') return null;
+      const raw = gpxLayer.get_elevation_data();
+      if (!raw || raw.length === 0) return null;
+
+      const coords = line.geometry.coordinates;
+      if (coords.length < 2) return null;
+
+      // Distances cumulées (km) à chaque sommet de la trace — une seule passe.
+      const cumulative = new Array(coords.length);
+      cumulative[0] = 0;
+      for (let i = 1; i < coords.length; i++) {
+        cumulative[i] = cumulative[i - 1] + turf.distance(coords[i - 1], coords[i], { units: 'kilometers' });
+      }
+      const totalKm = cumulative[cumulative.length - 1];
+
+      let cursor = 0; // segment courant, ne recule jamais
+      return raw.map(function (entry) {
+        const distKm = Math.max(0, Math.min(totalKm, entry[0]));
+        const ele = entry[1];
+
+        while (cursor < coords.length - 2 && cumulative[cursor + 1] < distKm) cursor++;
+
+        const segStart = cumulative[cursor];
+        const segEnd = cumulative[cursor + 1];
+        const segLength = segEnd - segStart;
+        // Position relative dans le segment courant (0 si segment de
+        // longueur nulle — deux points GPX identiques, ça arrive).
+        const t = segLength > 0 ? (distKm - segStart) / segLength : 0;
+
+        const [lon1, lat1] = coords[cursor];
+        const [lon2, lat2] = coords[cursor + 1];
+        return {
+          distKm: distKm,
+          ele: ele,
+          lat: lat1 + (lat2 - lat1) * t,
+          lon: lon1 + (lon2 - lon1) * t
+        };
+      });
+    }
+
+    function buildElevationPolylinePoints(profile, viewBoxW, viewBoxH) {
+      const totalKm = profile[profile.length - 1].distKm || 1;
+      const eles = profile.map(p => p.ele);
+      const minEle = Math.min.apply(null, eles);
+      const maxEle = Math.max.apply(null, eles);
+      const eleRange = (maxEle - minEle) || 1;
+      const paddingRatio = 0.08;
+      const usableH = viewBoxH * (1 - 2 * paddingRatio);
+      const topPad = viewBoxH * paddingRatio;
+      return profile.map(function (p) {
+        const x = (p.distKm / totalKm) * viewBoxW;
+        const y = topPad + usableH - ((p.ele - minEle) / eleRange) * usableH;
+        return x.toFixed(1) + ',' + y.toFixed(1);
+      }).join(' ');
+    }
+
+    function renderElevationMini() {
+      if (!elevationProfile) { elevationMiniCard.style.display = 'none'; return; }
+      elevationMiniLine.setAttribute('points', buildElevationPolylinePoints(elevationProfile, 300, 40));
+      elevationMiniCard.style.display = 'block';
+    }
+
+    function renderElevationBig() {
+      if (!elevationProfile) return;
+      const points = buildElevationPolylinePoints(elevationProfile, 1000, 165);
+      elevationLine.setAttribute('points', points);
+      elevationFill.setAttribute('points', `0,165 ${points} 1000,165`);
+      const eles = elevationProfile.map(p => p.ele);
+      const minEle = Math.round(Math.min.apply(null, eles));
+      const maxEle = Math.round(Math.max.apply(null, eles));
+      const totalKm = elevationProfile[elevationProfile.length - 1].distKm.toFixed(1);
+      elevationPanelInfo.textContent = `${totalKm} km — ${minEle} m à ${maxEle} m d'altitude`;
+    }
+
+    function hideElevationCursor() {
+      elevationCursorLine.style.display = 'none';
+      elevationCursorDot.style.display = 'none';
+      if (elevationCursorMarker) { map.removeLayer(elevationCursorMarker); elevationCursorMarker = null; }
+    }
+
+    function resetElevationState() {
+      elevationProfile = null;
+      elevationMiniCard.style.display = 'none';
+      elevationPanel.style.display = 'none';
+      hideElevationCursor();
+    }
+
+    elevationMiniCard.addEventListener('click', function () {
+      if (!elevationProfile) return;
+      renderElevationBig();
+      elevationPanel.style.display = 'block';
+    });
+    elevationCloseBtn.addEventListener('click', function () {
+      elevationPanel.style.display = 'none';
+      hideElevationCursor();
+    });
+
+    function findProfilePointAtFraction(fraction) {
+      const totalKm = elevationProfile[elevationProfile.length - 1].distKm;
+      const targetKm = Math.max(0, Math.min(totalKm, fraction * totalKm));
+      let best = elevationProfile[0];
+      let bestDelta = Infinity;
+      for (let i = 0; i < elevationProfile.length; i++) {
+        const delta = Math.abs(elevationProfile[i].distKm - targetKm);
+        if (delta < bestDelta) { bestDelta = delta; best = elevationProfile[i]; }
+        else if (elevationProfile[i].distKm > targetKm) break;
+      }
+      return best;
+    }
+
+    function updateElevationCursor(clientX) {
+      if (!elevationProfile) return;
+      const rect = elevationSvg.getBoundingClientRect();
+      if (rect.width === 0) return;
+      const fraction = (clientX - rect.left) / rect.width;
+      const point = findProfilePointAtFraction(fraction);
+      const totalKm = elevationProfile[elevationProfile.length - 1].distKm || 1;
+      const viewBoxW = 1000, viewBoxH = 165;
+      const x = (point.distKm / totalKm) * viewBoxW;
+      const eles = elevationProfile.map(p => p.ele);
+      const minEle = Math.min.apply(null, eles);
+      const maxEle = Math.max.apply(null, eles);
+      const eleRange = (maxEle - minEle) || 1;
+      const paddingRatio = 0.08;
+      const usableH = viewBoxH * (1 - 2 * paddingRatio);
+      const topPad = viewBoxH * paddingRatio;
+      const y = topPad + usableH - ((point.ele - minEle) / eleRange) * usableH;
+      elevationCursorLine.setAttribute('x1', x);
+      elevationCursorLine.setAttribute('x2', x);
+      elevationCursorLine.style.display = 'block';
+      elevationCursorDot.setAttribute('cx', x);
+      elevationCursorDot.setAttribute('cy', y);
+      elevationCursorDot.style.display = 'block';
+      elevationPanelInfo.textContent = `km ${point.distKm.toFixed(1)} — ${Math.round(point.ele)} m d'altitude`;
+      if (!elevationCursorMarker) {
+        elevationCursorMarker = L.circleMarker([point.lat, point.lon], { radius: 7, fillColor: '#1E88E5', color: '#fff', weight: 2, fillOpacity: 1 }).addTo(map);
+      } else {
+        elevationCursorMarker.setLatLng([point.lat, point.lon]);
+      }
+    }
+
+    elevationSvg.addEventListener('mousemove', e => updateElevationCursor(e.clientX));
+    elevationSvg.addEventListener('mouseleave', function () { renderElevationBig(); hideElevationCursor(); });
+    elevationSvg.addEventListener('touchmove', function (e) {
+      e.preventDefault();
+      if (e.touches && e.touches[0]) updateElevationCursor(e.touches[0].clientX);
+    }, { passive: false });
+    elevationSvg.addEventListener('touchend', function () { renderElevationBig(); hideElevationCursor(); });
+
+    gpxInput.addEventListener('change', function (event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+
+      if (currentGpxLayer) { map.removeLayer(currentGpxLayer); currentGpxLayer = null; }
+      if (currentGpxObjectUrl) URL.revokeObjectURL(currentGpxObjectUrl);
+
+      gpxStatusEl.textContent = `Chargement de ${file.name}…`;
+      currentGpxObjectUrl = URL.createObjectURL(file);
+
+      currentGpxLayer = new L.GPX(currentGpxObjectUrl, {
+        async: true,
+        marker_options: { startIconUrl: null, endIconUrl: null, shadowUrl: null },
+        polyline_options: { color: '#7CB518', weight: 4, opacity: 0.9 }
+      });
+
+      currentGpxLayer.on('loaded', function (e) {
+        const gpx = e.target;
+        map.fitBounds(gpx.getBounds());
+        const distanceKm = (gpx.get_distance() / 1000).toFixed(1);
+        const elevGainM = Math.round(gpx.get_elevation_gain());
+        gpxStatusEl.textContent = `${file.name} — ${distanceKm} km, +${elevGainM} m D+`;
+        gpxClearBtn.style.display = 'flex';
+
+        currentTrackLine = extractTurfLineFromGpx(gpx);
+        if (currentTrackLine) {
+          currentTrackTotalKm = turf.length(currentTrackLine, { units: 'kilometers' });
+          elevationProfile = buildElevationProfile(gpx, currentTrackLine);
+          renderElevationMini();
+        }
+
+        offlineExportCard.style.display = 'block';
+        offlineDownloadStatusEl.textContent = '';
+
+        // Une nouvelle trace invalide tout plan ou prévision basé sur l'ancienne.
+        resetDayplanState();
+        weatherResultsEl.innerHTML = '';
+        weatherStatusEl.textContent = '';
+      });
+
+      currentGpxLayer.on('error', function (e) {
+        console.error('Erreur de lecture GPX :', e);
+        gpxStatusEl.textContent = `Erreur de lecture de ${file.name} (fichier GPX valide ?)`;
+      });
+
+      currentGpxLayer.addTo(map);
+    });
+
+    gpxClearBtn.addEventListener('click', function () {
+      if (currentGpxLayer) { map.removeLayer(currentGpxLayer); currentGpxLayer = null; }
+      if (currentGpxObjectUrl) { URL.revokeObjectURL(currentGpxObjectUrl); currentGpxObjectUrl = null; }
+      gpxInput.value = '';
+      gpxStatusEl.textContent = '';
+      gpxClearBtn.style.display = 'none';
+      currentTrackLine = null;
+      currentTrackTotalKm = 0;
+      resetElevationState();
+      offlineExportCard.style.display = 'none';
+      offlineDownloadStatusEl.textContent = '';
+      resetDayplanState();
+      weatherResultsEl.innerHTML = '';
+      weatherStatusEl.textContent = '';
+    });
+
+    function extractTurfLineFromGpx(gpxLayer) {
+      const geojson = gpxLayer.toGeoJSON();
+      const coords = [];
+      (geojson.features || []).forEach(function (f) {
+        if (!f.geometry) return;
+        if (f.geometry.type === 'LineString') coords.push.apply(coords, f.geometry.coordinates);
+        else if (f.geometry.type === 'MultiLineString') f.geometry.coordinates.forEach(seg => coords.push.apply(coords, seg));
+      });
+      if (coords.length < 2) return null;
+      return turf.lineString(coords);
+    }
+
+    // =========================================================
+    // Ma position — même logique qu'EasyBiv (GPS indépendant du réseau)
+    // =========================================================
+    const locateBtn = document.getElementById('locate-btn');
+    let geoWatchId = null;
+    let userPositionMarker = null;
+    let userAccuracyCircle = null;
+    let hasCenteredOnFirstFix = false;
+
+    function stopLocateTracking() {
+      if (geoWatchId != null) { navigator.geolocation.clearWatch(geoWatchId); geoWatchId = null; }
+      if (userPositionMarker) { map.removeLayer(userPositionMarker); userPositionMarker = null; }
+      if (userAccuracyCircle) { map.removeLayer(userAccuracyCircle); userAccuracyCircle = null; }
+      hasCenteredOnFirstFix = false;
+      locateBtn.classList.remove('active');
+      locateBtn.title = 'Ma position';
+    }
+    function startLocateTracking() {
+      if (!navigator.geolocation) { alert("La géolocalisation n'est pas disponible sur ce navigateur."); return; }
+      locateBtn.classList.add('active');
+      locateBtn.title = 'Suivi en cours…';
+      geoWatchId = navigator.geolocation.watchPosition(
+        function (position) {
+          const latlng = [position.coords.latitude, position.coords.longitude];
+          if (!userPositionMarker) {
+            userPositionMarker = L.circleMarker(latlng, { radius: 8, fillColor: '#1E88E5', color: '#fff', weight: 2, fillOpacity: 1 }).addTo(map);
+            userAccuracyCircle = L.circle(latlng, { radius: position.coords.accuracy, color: '#1E88E5', weight: 1, fillOpacity: 0.1 }).addTo(map);
+          } else {
+            userPositionMarker.setLatLng(latlng);
+            userAccuracyCircle.setLatLng(latlng);
+            userAccuracyCircle.setRadius(position.coords.accuracy);
+          }
+          if (!hasCenteredOnFirstFix) { map.setView(latlng, Math.max(map.getZoom(), 14)); hasCenteredOnFirstFix = true; }
+        },
+        function (err) {
+          let msg = "Impossible d'obtenir la position.";
+          if (err.code === err.PERMISSION_DENIED) msg = 'Position refusée — vérifie les autorisations de localisation.';
+          else if (err.code === err.POSITION_UNAVAILABLE) msg = 'Position indisponible pour le moment.';
+          alert(msg);
+          stopLocateTracking();
+        },
+        { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 }
+      );
+    }
+    locateBtn.addEventListener('click', function () { if (geoWatchId != null) stopLocateTracking(); else startLocateTracking(); });
+
+    // =========================================================
+    // Points d'intérêt vélo — magasins, réparation, gonflage, lavage,
+    // distributeurs de chambres à air. Chargés depuis des tuiles GeoJSON
+    // statiques (data/tiles/*.geojson), générées une fois par jour par un
+    // script Python (voir scripts/update_poi.py) plutôt qu'interrogées en
+    // direct sur Overpass à chaque déplacement de carte — l'ancienne
+    // approche saturait rapidement les instances Overpass publiques
+    // (429, timeouts) même après plusieurs optimisations côté client.
+    //
+    // Une tuile chargée une fois n'est plus jamais retéléchargée (les
+    // fichiers sont statiques, régénérés une fois par jour seulement) —
+    // c'est un cache trivialement fiable, contrairement à l'ancien système
+    // de cache par zone+signature qui tentait de compenser un service tiers
+    // instable.
+    // =========================================================
+    const MIN_ZOOM_POI = 13;
+    const POI_TILE_SIZE_DEG = 0.1; // doit correspondre à TILE_SIZE_DEG dans scripts/update_poi.py
+    // Même epsilon que TILE_EPS côté Python — absorbe les artefacts de
+    // flottants (45.3 / 0.1 vaut 452.999… et non 453). Les deux formules
+    // DOIVENT rester identiques, sinon le client cherche des tuiles que le
+    // script n'a jamais écrites.
+    const POI_TILE_EPS = 1e-9;
+    const POI_TILES_BASE = 'data/tiles';
+
+    const toggleAteliers = document.getElementById('toggle-ateliers');
+    const ateliersFilterEls = Array.from(document.querySelectorAll('.ateliers-filter'));
+    const ateliersStatusEl = document.getElementById('ateliers-status');
+    const ateliersLayer = L.layerGroup().addTo(map);
+
+    const toggleEau = document.getElementById('toggle-eau');
+    const eauStatusEl = document.getElementById('eau-status');
+    const eauLayer = L.layerGroup().addTo(map);
+
+    // Ajoute un délai d'expiration explicite à un fetch — sans ça, un
+    // serveur qui accepte la connexion mais ne répond jamais peut faire
+    // attendre le navigateur de longues secondes avant d'abandonner tout
+    // seul. Toujours utile ici (fichiers statiques sur GitHub Pages, mais
+    // un CDN peut ponctuellement traîner) et par l'export hors-ligne
+    // plus loin dans ce fichier.
+    function fetchWithTimeout(url, timeoutMs) {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+      return fetch(url, { signal: controller.signal }).finally(() => clearTimeout(timeoutId));
+    }
+
+    // --- Chargement des tuiles POI vélo ---
+
+    let poiTileIndex = null; // Set des identifiants de tuiles réellement disponibles (chargé une fois)
+    let poiTileIndexPromise = null;
+    const poiLoadedTileIds = new Set(); // tuiles déjà récupérées — jamais retéléchargées
+    const poiTilesInFlight = new Map(); // id -> promesse en cours, évite les doubles chargements concurrents
+    const poiFeatures = []; // tous les points chargés jusqu'ici, en mémoire : {lat, lon, props}
+
+    function poiTileIdsForBounds(bounds) {
+      const latMin = Math.floor(bounds.getSouth() / POI_TILE_SIZE_DEG + POI_TILE_EPS);
+      const latMax = Math.floor(bounds.getNorth() / POI_TILE_SIZE_DEG + POI_TILE_EPS);
+      const lonMin = Math.floor(bounds.getWest() / POI_TILE_SIZE_DEG + POI_TILE_EPS);
+      const lonMax = Math.floor(bounds.getEast() / POI_TILE_SIZE_DEG + POI_TILE_EPS);
+      const ids = [];
+      for (let la = latMin; la <= latMax; la++) {
+        for (let lo = lonMin; lo <= lonMax; lo++) ids.push(`${la}_${lo}`);
+      }
+      return ids;
+    }
+
+    async function ensurePoiTileIndexLoaded() {
+      if (poiTileIndex) return poiTileIndex;
+      if (!poiTileIndexPromise) {
+        poiTileIndexPromise = fetchWithTimeout(`${POI_TILES_BASE}/index.json`, 10000)
+          .then(function (response) {
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            return response.json();
+          })
+          .then(function (index) {
+            poiTileIndex = new Set(index.tiles || []);
+            console.log(`[poi-tiles] index chargé — ${poiTileIndex.size} tuile(s) disponible(s), généré le ${index.generated_at}`);
+            return poiTileIndex;
+          })
+          .catch(function (err) {
+            // On remet la promesse à zéro plutôt que de mémoriser un index
+            // vide : un accroc réseau au premier chargement ne doit pas
+            // condamner la couche jusqu'au prochain rechargement de page.
+            poiTileIndexPromise = null;
+            throw err;
+          });
+      }
+      return poiTileIndexPromise;
+    }
+
+    // Charge une tuile une seule fois, même si plusieurs appels concurrents
+    // la demandent en même temps (rafraîchissement de carte + "autour de
+    // moi", par exemple). Sans ce garde-fou, la même tuile pouvait être
+    // téléchargée deux fois et ses points ajoutés en double à poiFeatures,
+    // produisant des marqueurs dupliqués sur la carte.
+    function loadPoiTile(id) {
+      if (poiLoadedTileIds.has(id)) return Promise.resolve();
+      if (poiTilesInFlight.has(id)) return poiTilesInFlight.get(id);
+
+      const promise = fetchWithTimeout(`${POI_TILES_BASE}/${id}.geojson`, 10000)
+        .then(function (response) {
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          return response.json();
+        })
+        .then(function (geojson) {
+          // Re-vérification : une autre tâche a pu terminer entre-temps.
+          if (poiLoadedTileIds.has(id)) return;
+          (geojson.features || []).forEach(function (f) {
+            const coords = f.geometry && f.geometry.coordinates;
+            if (!coords || coords.length < 2) return;
+            poiFeatures.push({ lat: coords[1], lon: coords[0], props: f.properties || {} });
+          });
+          poiLoadedTileIds.add(id);
+        })
+        .catch(function (err) {
+          // Pas d'ajout à poiLoadedTileIds : un prochain passage sur cette
+          // zone retentera le chargement plutôt que de rester définitivement
+          // vide suite à un simple accroc réseau ponctuel.
+          console.warn('[poi-tiles] échec chargement tuile', id, '—', err.message);
+        })
+        .finally(function () {
+          poiTilesInFlight.delete(id);
+        });
+
+      poiTilesInFlight.set(id, promise);
+      return promise;
+    }
+
+    // Concurrence plafonnée : le corridor d'une longue trace peut couvrir
+    // des centaines de tuiles, et lancer autant de fetch simultanés sature
+    // le navigateur (surtout sur mobile). runWithConcurrencyLimit est
+    // déclarée plus bas dans ce script — les déclarations de fonction sont
+    // hoistées, donc utilisable ici sans souci d'ordre.
+    const POI_TILE_CONCURRENCY = 8;
+
+    async function ensurePoiTilesLoaded(tileIds) {
+      await ensurePoiTileIndexLoaded();
+      const toFetch = tileIds.filter(id => poiTileIndex.has(id) && !poiLoadedTileIds.has(id));
+      if (toFetch.length === 0) return;
+      await runWithConcurrencyLimit(toFetch.map(id => () => loadPoiTile(id)), POI_TILE_CONCURRENCY);
+    }
+
+    // Centre géographique approximatif d'une tuile, d'après son identifiant.
+    function poiTileCenter(id) {
+      const [latIdx, lonIdx] = id.split('_').map(Number);
+      return {
+        lat: (latIdx + 0.5) * POI_TILE_SIZE_DEG,
+        lon: (lonIdx + 0.5) * POI_TILE_SIZE_DEG
+      };
+    }
+
+    // Variante pour les recherches à large rayon ("autour de moi") : une
+    // zone de 150 km de rayon couvre plus de mille tuiles, soit autant de
+    // requêtes HTTP si on les charge toutes bêtement. On les trie par
+    // proximité du point de départ et on plafonne — les ateliers les plus
+    // proches, seuls recherchés ici, sont forcément dans les tuiles les
+    // plus proches.
+    async function ensureNearestPoiTilesLoaded(tileIds, fromLat, fromLon, maxTiles) {
+      await ensurePoiTileIndexLoaded();
+      const candidates = tileIds.filter(id => poiTileIndex.has(id) && !poiLoadedTileIds.has(id));
+      if (candidates.length === 0) return;
+
+      candidates.sort(function (a, b) {
+        const ca = poiTileCenter(a), cb = poiTileCenter(b);
+        const da = (ca.lat - fromLat) ** 2 + (ca.lon - fromLon) ** 2;
+        const db = (cb.lat - fromLat) ** 2 + (cb.lon - fromLon) ** 2;
+        return da - db;
+      });
+
+      const selected = candidates.slice(0, maxTiles);
+      if (candidates.length > selected.length) {
+        console.log(`[poi-tiles] ${candidates.length} tuiles candidates, limitées aux ${selected.length} plus proches`);
+      }
+      await runWithConcurrencyLimit(selected.map(id => () => loadPoiTile(id)), POI_TILE_CONCURRENCY);
+    }
+
+    const POI_CATEGORY_STYLE = {
+      shop: { color: '#2E7D32', label: 'Magasin vélo' },
+      repair: { color: '#F57F17', label: 'Station de réparation' },
+      compressed_air: { color: '#00897B', label: 'Gonflage' },
+      wash: { color: '#5C6BC0', label: 'Lavage' },
+      tube_vending: { color: '#6D4C41', label: 'Distributeur de chambres à air' }
+    };
+
+    function popupForPoiFeature(props) {
+      const style = POI_CATEGORY_STYLE[props.category] || { color: '#777', label: 'Point vélo' };
+      const nom = props.name || style.label;
+      let html = `<div class="poi-popup"><h4>${escapeHtml(nom)}</h4><p>${escapeHtml(style.label)}</p>`;
+      if (props.opening_hours) html += `<p>Horaires : ${escapeHtml(props.opening_hours)}</p>`;
+      if (props.phone) html += `<p>Tél. : <a href="tel:${escapeHtml(props.phone.replace(/\s+/g, ''))}">${escapeHtml(props.phone)}</a></p>`;
+      if (props.has_compressed_air && props.category !== 'compressed_air') html += `<p>Gonflage disponible sur place</p>`;
+      if (props.website) html += `<a href="${escapeHtml(props.website)}" target="_blank" rel="noopener">Site web →</a>`;
+      html += `</div>`;
+      return html;
+    }
+
+    // Popup des points d'eau (source OpenDataSoft) — les champs
+    // disponibles y sont bien plus pauvres que pour les ateliers vélo :
+    // essentiellement un nom éventuel et parfois une indication de
+    // gratuité. Pas de fonction partagée avec les ateliers, dont les
+    // données viennent d'une autre source avec d'autres champs.
+    function popupForWaterPoint(fields) {
+      const nom = fields.name || "Point d'eau potable";
+      let html = `<div class="poi-popup"><h4>${escapeHtml(nom)}</h4><p>Point d'eau potable</p>`;
+      if (fields.fee === 'yes') html += `<p>Payant</p>`;
+      else if (fields.fee === 'no') html += `<p>Gratuit</p>`;
+      html += `</div>`;
+      return html;
+    }
+
+    // Une seule requête Overpass pour ateliers + eau — avant, deux appels
+    // séparés partaient à chaque déplacement de carte, doublant inutilement
+    // le volume envoyé à une infrastructure déjà en limitation de débit.
+    async function refreshAteliersLayer() {
+      if (!toggleAteliers.checked) {
+        if (map.hasLayer(ateliersLayer)) map.removeLayer(ateliersLayer);
+        return;
+      }
+      if (!map.hasLayer(ateliersLayer)) map.addLayer(ateliersLayer);
+
+      if (map.getZoom() < MIN_ZOOM_POI) {
+        ateliersStatusEl.textContent = `Zoome pour charger les points (niveau ${MIN_ZOOM_POI}+)`;
+        return;
+      }
+
+      const activeFilters = new Set(ateliersFilterEls.filter(cb => cb.checked).map(cb => cb.value));
+      if (activeFilters.size === 0) { ateliersStatusEl.textContent = 'Sélectionne au moins un type de point.'; return; }
+
+      // Léger surplus autour de la vue actuelle pour que de petits
+      // déplacements de carte tombent souvent dans des tuiles déjà
+      // chargées — mais l'essentiel du gain vient du fait qu'une tuile,
+      // une fois récupérée, n'est de toute façon plus jamais retéléchargée.
+      const currentBounds = map.getBounds().pad(0.2);
+      const neededTileIds = poiTileIdsForBounds(currentBounds);
+
+      ateliersStatusEl.textContent = 'Chargement…';
+      try {
+        await ensurePoiTilesLoaded(neededTileIds);
+
+        ateliersLayer.clearLayers();
+        let shown = 0;
+        poiFeatures.forEach(function (f) {
+          if (!activeFilters.has(f.props.category)) return;
+          if (!currentBounds.contains([f.lat, f.lon])) return;
+          const style = POI_CATEGORY_STYLE[f.props.category] || { color: '#777' };
+          L.circleMarker([f.lat, f.lon], { radius: 8, fillColor: style.color, color: '#fff', weight: 2, fillOpacity: 0.95 })
+            .bindPopup(popupForPoiFeature(f.props))
+            .addTo(ateliersLayer);
+          shown++;
+        });
+
+        ateliersStatusEl.textContent = `${shown} point(s) affiché(s).`;
+      } catch (err) {
+        console.error('[ateliers] erreur', err);
+        ateliersStatusEl.textContent = `Erreur : ${err.message} (les données n'ont peut-être pas encore été générées — voir scripts/update_poi.py)`;
+      }
+    }
+
+    // =========================================================
+    // Points d'eau — désormais via l'API OpenDataSoft (data.smartidf.services),
+    // un jeu de données pré-extrait d'OSM (mis à jour hebdomadairement),
+    // plutôt que via Overpass directement. Objectif : sortir "eau" de la
+    // charge Overpass (déjà sollicité au maximum pour les ateliers vélo,
+    // sans équivalent ailleurs), et bénéficier d'une infra a priori moins
+    // saturée qu'Overpass.
+    //
+    // Fiabilité de ce qui suit : l'existence de l'API v1 et son paramètre
+    // geofilter.bbox sont documentés officiellement par OpenDataSoft
+    // (endpoint marqué "déprécié mais toujours supporté"). En revanche, je
+    // n'ai pas pu tester un vrai appel depuis mon environnement (outils
+    // réseau restreints) — les noms exacts des champs de la réponse
+    // (fields.name, geometry.coordinates...) suivent le schéma standard
+    // OpenDataSoft mais n'ont pas été vérifiés sur ce dataset précis. Log
+    // de la réponse brute ajouté pour diagnostic rapide si besoin.
+    // =========================================================
+    const OSM_WATER_ODS_URL = 'https://data.smartidf.services/api/records/1.0/search/';
+    const OSM_WATER_DATASET = 'osm-france-drinking-water';
+
+    let eauCache = null; // { bounds, signature } — signature fixe ici, pas de filtres pour cette couche
+
+    async function refreshEauLayer() {
+      if (!toggleEau.checked) {
+        if (map.hasLayer(eauLayer)) map.removeLayer(eauLayer);
+        return;
+      }
+      if (!map.hasLayer(eauLayer)) map.addLayer(eauLayer);
+
+      if (map.getZoom() < MIN_ZOOM_POI) {
+        eauStatusEl.textContent = `Zoome pour charger les points (niveau ${MIN_ZOOM_POI}+)`;
+        return;
+      }
+
+      const currentBounds = map.getBounds();
+      if (isViewportCovered(eauCache, currentBounds, 'default')) {
+        eauStatusEl.textContent = `${eauLayer.getLayers().length} point(s) affiché(s) (déjà en cache).`;
+        return;
+      }
+
+      const paddedBounds = currentBounds.pad(AREA_CACHE_PADDING);
+      const bbox = `${paddedBounds.getSouth()},${paddedBounds.getWest()},${paddedBounds.getNorth()},${paddedBounds.getEast()}`;
+      const url = `${OSM_WATER_ODS_URL}?dataset=${OSM_WATER_DATASET}&geofilter.bbox=${bbox}&rows=200`;
+
+      eauStatusEl.textContent = 'Chargement…';
+      try {
+        const data = await fetchJsonWithFallback(url);
+        console.log('[eau] réponse brute OpenDataSoft', data);
+        const records = data.records || [];
+
+        eauLayer.clearLayers();
+        let shown = 0;
+        records.forEach(function (rec) {
+          const geo = rec.geometry && rec.geometry.coordinates; // [lon, lat] attendu (GeoJSON)
+          if (!geo || geo.length < 2) return;
+          const lon = geo[0], lat = geo[1];
+          L.circleMarker([lat, lon], { radius: 7, fillColor: '#1E88E5', color: '#fff', weight: 2, fillOpacity: 0.95 })
+            .bindPopup(popupForWaterPoint(rec.fields || {}))
+            .addTo(eauLayer);
+          shown++;
+        });
+
+        eauCache = { bounds: paddedBounds, signature: 'default' };
+        eauStatusEl.textContent = records.length > 0 && shown === 0
+          ? `${records.length} résultat(s) reçu(s), mais coordonnées introuvables (structure à vérifier).`
+          : `${shown} point(s) trouvé(s).`;
+      } catch (err) {
+        console.error('[eau] erreur', err);
+        eauStatusEl.textContent = `Erreur : ${err.message}`;
+      }
+    }
+
+    let poiRefreshTimer = null;
+    function schedulePoiRefresh() {
+      clearTimeout(poiRefreshTimer);
+      poiRefreshTimer = setTimeout(function () {
+        refreshAteliersLayer();
+        refreshEauLayer();
+        refreshDataTourismeLayers();
+      }, 500);
+    }
+    map.on('moveend', schedulePoiRefresh);
+    toggleAteliers.addEventListener('change', refreshAteliersLayer);
+    ateliersFilterEls.forEach(cb => cb.addEventListener('change', refreshAteliersLayer));
+    toggleEau.addEventListener('change', refreshEauLayer);
+
+    // =========================================================
+    // "Ateliers vélo autour de moi" — recherche par rayon fixe autour de la
+    // position GPS actuelle (pas liée au déplacement de la carte, contrairement
+    // à la couche "live" ci-dessus), avec liste de résultats et mise en
+    // surbrillance des marqueurs correspondants.
+    // =========================================================
+    // Rayon croissant plutôt que fixe : un rayon de 3 km suffit en ville
+    // mais peut ne rien trouver du tout en zone isolée ("la pampa") — on
+    // élargit progressivement jusqu'à obtenir au moins 5 résultats, avec un
+    // plafond pour éviter une requête déraisonnable si vraiment rien à des
+    // centaines de km à la ronde.
+    const AROUND_ME_RADIUS_STEPS_M = [3000, 10000, 30000, 80000, 150000];
+    const AROUND_ME_TARGET_COUNT = 5;
+    const AROUND_ME_MAX_TILES_PER_STEP = 60; // garde-fou : évite des centaines de requêtes sur les grands rayons
+
+    const aroundMeBtn = document.getElementById('around-me-btn');
+    const aroundMeStatusEl = document.getElementById('around-me-status');
+    const aroundMeResultsEl = document.getElementById('around-me-results');
+    const aroundMeLayer = L.layerGroup().addTo(map);
+
+    function haversineMeters(lat1, lon1, lat2, lon2) {
+      const R = 6371000;
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    // Récupère la position actuelle : réutilise le suivi GPS déjà actif
+    // (bouton "Ma position") s'il tourne, sinon demande une position
+    // ponctuelle sans activer le suivi continu.
+    function getCurrentPositionOnce() {
+      return new Promise(function (resolve, reject) {
+        if (userPositionMarker) {
+          const ll = userPositionMarker.getLatLng();
+          resolve({ lat: ll.lat, lon: ll.lng });
+          return;
+        }
+        if (!navigator.geolocation) { reject(new Error('Géolocalisation indisponible sur ce navigateur.')); return; }
+        navigator.geolocation.getCurrentPosition(
+          function (position) { resolve({ lat: position.coords.latitude, lon: position.coords.longitude }); },
+          function () { reject(new Error("Impossible d'obtenir ta position — vérifie les autorisations de localisation.")); },
+          { enableHighAccuracy: true, timeout: 15000, maximumAge: 5000 }
+        );
+      });
+    }
+
+    // Interroge Overpass avec un rayon croissant jusqu'à obtenir au moins
+    // AROUND_ME_TARGET_COUNT résultats (ou jusqu'au dernier palier) — un
+    // seul appel par palier, on s'arrête dès que c'est suffisant plutôt que
+    // d'aller systématiquement jusqu'au rayon maximal.
+    async function fetchAteliersWithGrowingRadius(pos, onProgress) {
+      let lastMatches = [];
+      let lastRadius = AROUND_ME_RADIUS_STEPS_M[0];
+
+      for (const radius of AROUND_ME_RADIUS_STEPS_M) {
+        onProgress(`Recherche dans un rayon de ${radius / 1000} km…`);
+
+        // Bbox approximative couvrant le rayon courant, pour savoir quelles
+        // tuiles charger — 111km par degré de latitude, ajusté par cos(lat)
+        // pour la longitude.
+        const degLat = radius / 111000;
+        const degLon = radius / (111000 * Math.cos(pos.lat * Math.PI / 180));
+        const bounds = L.latLngBounds(
+          [pos.lat - degLat, pos.lon - degLon],
+          [pos.lat + degLat, pos.lon + degLon]
+        );
+
+        try {
+          // Plafonné : sans ça, le palier 150 km demanderait plus de mille
+          // requêtes HTTP. Les tuiles les plus proches suffisent puisqu'on
+          // ne cherche que les ateliers les plus proches.
+          await ensureNearestPoiTilesLoaded(poiTileIdsForBounds(bounds), pos.lat, pos.lon, AROUND_ME_MAX_TILES_PER_STEP);
+        } catch (err) {
+          console.warn('[around-me] chargement de tuiles incomplet —', err.message);
+        }
+
+        const matches = poiFeatures.filter(function (f) {
+          if (f.props.category !== 'shop' && f.props.category !== 'repair') return false;
+          return haversineMeters(pos.lat, pos.lon, f.lat, f.lon) <= radius;
+        });
+
+        lastMatches = matches;
+        lastRadius = radius;
+        if (matches.length >= AROUND_ME_TARGET_COUNT) break;
+      }
+
+      return { matches: lastMatches, radiusUsed: lastRadius };
+    }
+
+    aroundMeBtn.addEventListener('click', async function () {
+      aroundMeBtn.disabled = true;
+      aroundMeLayer.clearLayers();
+      aroundMeResultsEl.innerHTML = '';
+      aroundMeStatusEl.textContent = 'Localisation en cours…';
+
+      try {
+        const pos = await getCurrentPositionOnce();
+
+        const { matches, radiusUsed } = await fetchAteliersWithGrowingRadius(pos, function (msg) {
+          aroundMeStatusEl.textContent = msg;
+        });
+
+        const results = matches.map(function (f) {
+          const style = POI_CATEGORY_STYLE[f.props.category] || { color: '#777', label: 'Point vélo' };
+          return {
+            name: f.props.name || style.label,
+            label: style.label,
+            color: style.color,
+            lat: f.lat,
+            lon: f.lon,
+            props: f.props,
+            distanceM: haversineMeters(pos.lat, pos.lon, f.lat, f.lon)
+          };
+        }).sort((a, b) => a.distanceM - b.distanceM).slice(0, AROUND_ME_TARGET_COUNT);
+
+        if (results.length === 0) {
+          aroundMeStatusEl.textContent = `Aucun atelier trouvé, même jusqu'à ${radiusUsed / 1000} km à la ronde.`;
+          aroundMeBtn.disabled = false;
+          return;
+        }
+
+        // Marqueurs mis en évidence : contour plus épais + légèrement plus
+        // grands que les marqueurs "live" habituels, pour bien les distinguer.
+        const markers = [];
+        results.forEach(function (r) {
+          const marker = L.circleMarker([r.lat, r.lon], { radius: 11, fillColor: r.color, color: '#14181A', weight: 3, fillOpacity: 1 })
+            .bindPopup(popupForPoiFeature(r.props))
+            .addTo(aroundMeLayer);
+          markers.push(marker);
+        });
+
+        const allLatLngs = results.map(r => [r.lat, r.lon]).concat([[pos.lat, pos.lon]]);
+        map.fitBounds(L.latLngBounds(allLatLngs), { padding: [50, 50] });
+
+        let html = '';
+        results.forEach(function (r, i) {
+          const distLabel = r.distanceM < 1000 ? `${Math.round(r.distanceM)} m` : `${(r.distanceM / 1000).toFixed(1)} km`;
+          html += `<div class="around-me-item" data-index="${i}">` +
+            `<div><div class="around-me-item-name">${escapeHtml(r.name)}</div>` +
+            `<div class="around-me-item-type">${escapeHtml(r.label)}</div></div>` +
+            `<div class="around-me-item-dist">${distLabel}</div>` +
+            `</div>`;
+        });
+        aroundMeResultsEl.innerHTML = html;
+
+        aroundMeResultsEl.querySelectorAll('.around-me-item').forEach(function (item) {
+          item.addEventListener('click', function () {
+            const idx = Number(item.dataset.index);
+            const r = results[idx];
+            map.flyTo([r.lat, r.lon], Math.max(map.getZoom(), 16), { duration: 0.6 });
+            markers[idx].openPopup();
+          });
+        });
+
+        const shortfallNote = results.length < AROUND_ME_TARGET_COUNT
+          ? ` (moins de ${AROUND_ME_TARGET_COUNT} trouvés même à ${radiusUsed / 1000} km)`
+          : ` (rayon final : ${radiusUsed / 1000} km)`;
+        aroundMeStatusEl.textContent = `${results.length} atelier(s) le(s) plus proche(s)${shortfallNote}.`;
+      } catch (err) {
+        console.error('[around-me] erreur', err);
+        aroundMeStatusEl.textContent = `Erreur : ${err.message}`;
+      } finally {
+        aroundMeBtn.disabled = false;
+      }
+    });
+
+    // =========================================================
+    // Hébergements + Restaurants — API DATAtourisme (nécessite une clé API
+    // gratuite, à obtenir manuellement — voir lien dans le panneau dédié).
+    // Un seul appel réseau alimente les deux couches (même endpoint
+    // générique /placeOfInterest, filtré côté client par type ensuite).
+    // =========================================================
+    const DATATOURISME_BASE = 'https://api.datatourisme.fr/v1/placeOfInterest';
+    const MIN_ZOOM_HEBERGEMENTS = 12;
+    const DATATOURISME_KEY_STORAGE = 'cyclotrip_datatourisme_key';
+
+    const datatourismeKeyInput = document.getElementById('datatourisme-key');
+    const apiKeySavedBadge = document.getElementById('api-key-saved-badge');
+    const toggleHebergements = document.getElementById('toggle-hebergements');
+    const toggleRestaurants = document.getElementById('toggle-restaurants');
+    const hebergementsStatusEl = document.getElementById('hebergements-status');
+    const hebergementsLayer = L.layerGroup().addTo(map);
+    const restaurantsLayer = L.layerGroup().addTo(map);
+    const poiCache = new Map(); // uuid -> objet POI complet, pour l'assignation manuelle depuis une popup
+
+    // Charge la clé déjà enregistrée, s'il y en a une
+    try {
+      const savedKey = localStorage.getItem(DATATOURISME_KEY_STORAGE);
+      if (savedKey) {
+        datatourismeKeyInput.value = savedKey;
+        apiKeySavedBadge.style.display = 'block';
+      }
+    } catch (err) { /* stockage indisponible, tant pis */ }
+
+    datatourismeKeyInput.addEventListener('change', function () {
+      const key = datatourismeKeyInput.value.trim();
+      try {
+        if (key) { localStorage.setItem(DATATOURISME_KEY_STORAGE, key); apiKeySavedBadge.style.display = 'block'; }
+        else { localStorage.removeItem(DATATOURISME_KEY_STORAGE); apiKeySavedBadge.style.display = 'none'; }
+      } catch (err) { /* non bloquant */ }
+      refreshDataTourismeLayers();
+    });
+
+    // Essaie plusieurs chemins plausibles pour extraire lat/lon d'un POI
+    // DATAtourisme — la doc officielle liste "isLocatedAt.geo" comme champ
+    // par défaut mais ne précise pas la clé exacte des coordonnées à
+    // l'intérieur (schema:latitude ? latitude ? lat ?). À vérifier et
+    // corriger avec une vraie réponse une fois une clé API disponible.
+    // isLocatedAt et address sont des tableaux dans la vraie réponse (une
+    // structure JSON-LD/RDF classique) — confirmé sur un vrai exemple, pas
+    // supposé. On prend le premier élément de chacun.
+    // Confirmé sur un vrai exemple (Hôtel Lesdiguières, Grenoble) : les
+    // hébergements portent "Accommodation" et/ou "LodgingBusiness" dans
+    // leur tableau type — génériques, donc censés couvrir aussi gîtes,
+    // campings et chambres d'hôtes, pas seulement les hôtels au sens strict.
+    function isAccommodationType(poi) {
+      const types = poi && Array.isArray(poi.type) ? poi.type : [];
+      return types.includes('Accommodation') || types.includes('LodgingBusiness');
+    }
+
+    // Même principe pour la restauration : "FoodEstablishment" est le tag
+    // générique observé sur tous les restaurants/bars à vin/caves de
+    // l'échantillon testé, y compris ceux combinés à un hébergement
+    // (HotelRestaurant).
+    function isFoodType(poi) {
+      const types = poi && Array.isArray(poi.type) ? poi.type : [];
+      return types.includes('FoodEstablishment');
+    }
+
+    // Termes structurels/génériques à ignorer pour extraire un type de
+    // restaurant plus précis (Restaurant, BistroOrWineBar, Winery,
+    // HotelRestaurant...) quand il est présent — sinon repli générique.
+    const GENERIC_TYPE_TERMS = new Set([
+      'FoodEstablishment', 'PointOfInterest', 'PlaceOfInterest',
+      'LocalBusiness', 'Store', 'ActivityProvider', 'SportsAndLeisurePlace'
+    ]);
+    const FOOD_TYPE_LABELS = {
+      Restaurant: 'Restaurant',
+      HotelRestaurant: "Restaurant d'hôtel",
+      BistroOrWineBar: 'Bar à vin / bistrot',
+      Winery: 'Cave / vignoble',
+      TastingProvider: 'Dégustation'
+    };
+    function restaurantTypeLabel(poi) {
+      const types = poi && Array.isArray(poi.type) ? poi.type : [];
+      const specific = types.find(t => !GENERIC_TYPE_TERMS.has(t));
+      if (!specific) return 'Restauration';
+      return FOOD_TYPE_LABELS[specific] || specific.replace(/([a-z])([A-Z])/g, '$1 $2');
+    }
+
+    function extractLatLonFromPoi(poi) {
+      const location = poi && Array.isArray(poi.isLocatedAt) ? poi.isLocatedAt[0] : null;
+      const geo = location && location.geo;
+      if (!geo) return null;
+      const lat = geo['schema:latitude'] ?? geo.latitude ?? geo.lat;
+      const lon = geo['schema:longitude'] ?? geo.longitude ?? geo.lon ?? geo.lng;
+      if (typeof lat !== 'number' || typeof lon !== 'number') return null;
+      return { lat: Number(lat), lon: Number(lon) };
+    }
+
+    function poiLabel(poi) {
+      // Le libellé est une chaîne étiquetée par langue au format JSON-LD
+      // ("@fr", pas "fr") — on part sur la première valeur disponible,
+      // quelle que soit la langue, plutôt que de parier sur une seule clé.
+      return (poi.label && (poi.label['@fr'] || Object.values(poi.label)[0])) || 'Sans nom';
+    }
+
+    function poiAddressLine(poi) {
+      const location = poi.isLocatedAt && Array.isArray(poi.isLocatedAt) ? poi.isLocatedAt[0] : null;
+      const address = location && Array.isArray(location.address) ? location.address[0] : null;
+      return address
+        ? [address.streetAddress, address.postalCode, address.addressLocality].filter(Boolean).join(', ')
+        : '';
+    }
+
+    function poiFicheLink(poi) {
+      return poi.uuid ? `https://data.datatourisme.fr/${escapeHtml(poi.uuid)}` : null;
+    }
+
+    function popupForHebergement(poi) {
+      const label = poiLabel(poi);
+      const addressLine = poiAddressLine(poi);
+      const lien = poiFicheLink(poi);
+      let html = `<div class="poi-popup"><h4>${escapeHtml(label)}</h4>`;
+      if (addressLine) html += `<p>${escapeHtml(addressLine)}</p>`;
+      if (lien) html += `<a href="${lien}" target="_blank" rel="noopener">Voir la fiche →</a>`;
+
+      // Bouton d'assignation manuelle — visible seulement quand un jour
+      // ayant une nuit à assigner est sélectionné (mode Hébergements). Le
+      // dernier jour est exclu : il se termine à la fin de la trace et n'a
+      // pas de nuit, lui en attribuer une rallongerait le plan d'un jour.
+      //
+      // selectedDayIndex / dayplanMode / dayNightPoints sont déclarés avec
+      // `let` plus bas dans ce script. Les lire ici est sans risque parce
+      // que cette fonction n'est appelée qu'à l'ouverture d'une popup,
+      // c'est-à-dire sur interaction utilisateur, longtemps après que tout
+      // le script ait fini de s'exécuter. (Un garde `typeof` ne protégerait
+      // d'ailleurs de rien : sur une variable `let` en zone morte
+      // temporelle, `typeof` lève lui aussi une ReferenceError.)
+      //
+      // L'uuid est injecté dans un attribut onclick : on n'accepte que le
+      // format hexadécimal/tirets attendu, pour écarter toute injection via
+      // une valeur inattendue de l'API.
+      const uuidIsSafe = typeof poi.uuid === 'string' && /^[A-Za-z0-9-]+$/.test(poi.uuid);
+      if (uuidIsSafe && selectedDayIndex !== null && dayplanMode === 'hebergements' &&
+          selectedDayIndex < dayNightPoints.length) {
+        html += `<button class="popup-assign-btn" onclick="assignHebergementToSelectedDay('${poi.uuid}')">` +
+          `Assigner au jour ${selectedDayIndex + 1}</button>`;
+      }
+
+      html += `</div>`;
+      return html;
+    }
+
+    // Assigne manuellement un hébergement cliqué sur la carte au jour
+    // actuellement sélectionné dans le plan — réutilise exactement la même
+    // logique de recalcul que le menu déroulant existant (redistribution
+    // automatique des jours suivants).
+    function assignHebergementToSelectedDay(uuid) {
+      if (selectedDayIndex === null || dayplanMode !== 'hebergements' || !currentTrackLine) return;
+
+      // Le dernier jour se termine à la fin de la trace, il n'a pas de nuit
+      // à lui assigner : écrire dans dayNightPoints à cet index ajouterait
+      // une nuit et donc un jour entier au plan. Le bouton n'est pas censé
+      // s'afficher dans ce cas (voir popupForHebergement), cette garde est
+      // la ceinture en plus des bretelles.
+      if (selectedDayIndex >= dayNightPoints.length) return;
+
+      const poi = poiCache.get(uuid);
+      if (!poi) return;
+      const latlon = extractLatLonFromPoi(poi);
+      if (!latlon) return;
+
+      const pt = turf.point([latlon.lon, latlon.lat]);
+      const snapped = turf.nearestPointOnLine(currentTrackLine, pt, { units: 'kilometers' });
+      const candidate = { poi: poi, alongKm: snapped.properties.location, distKm: snapped.properties.dist, lat: latlon.lat, lon: latlon.lon };
+
+      if (!lodgingCandidates) lodgingCandidates = [];
+      if (!lodgingCandidates.some(c => c.poi.uuid === uuid)) lodgingCandidates.push(candidate);
+
+      recomputeFromNightEdit(selectedDayIndex, candidate);
+      map.closePopup();
+    }
+
+    function popupForRestaurant(poi) {
+      const label = poiLabel(poi);
+      const typeLabel = restaurantTypeLabel(poi);
+      const addressLine = poiAddressLine(poi);
+      const lien = poiFicheLink(poi);
+      let html = `<div class="poi-popup"><h4>${escapeHtml(label)}</h4><p>${escapeHtml(typeLabel)}</p>`;
+      if (addressLine) html += `<p>${escapeHtml(addressLine)}</p>`;
+      if (lien) html += `<a href="${lien}" target="_blank" rel="noopener">Voir la fiche →</a>`;
+      html += `</div>`;
+      return html;
+    }
+
+    async function refreshDataTourismeLayers() {
+      hebergementsLayer.clearLayers();
+      restaurantsLayer.clearLayers();
+
+      const wantHebergements = toggleHebergements.checked;
+      const wantRestaurants = toggleRestaurants.checked;
+      if (!wantHebergements && !wantRestaurants) return;
+
+      const apiKey = (localStorage.getItem(DATATOURISME_KEY_STORAGE) || datatourismeKeyInput.value || '').trim();
+      if (!apiKey) {
+        hebergementsStatusEl.textContent = 'Renseigne une clé API DATAtourisme ci-dessus pour activer ces couches.';
+        return;
+      }
+      if (map.getZoom() < MIN_ZOOM_HEBERGEMENTS) {
+        hebergementsStatusEl.textContent = `Zoome pour charger les points (niveau ${MIN_ZOOM_HEBERGEMENTS}+)`;
+        return;
+      }
+
+      const b = map.getBounds();
+      // geo_bounding attend : top_left_lat,top_left_lon,bottom_right_lat,bottom_right_lon
+      const geoBounding = `${b.getNorth()},${b.getWest()},${b.getSouth()},${b.getEast()}`;
+      const url = `${DATATOURISME_BASE}?geo_bounding=${encodeURIComponent(geoBounding)}&page_size=100` +
+        `&fields=uuid,label,type,isLocatedAt.geo,isLocatedAt.address`;
+
+      hebergementsStatusEl.textContent = 'Chargement…';
+      try {
+        // Appel direct avec l'en-tête d'authentification recommandé par la
+        // doc officielle — pas de repli proxy fiable ici, un proxy CORS
+        // public générique ne relaie généralement pas les en-têtes
+        // personnalisés.
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
+        const response = await fetch(url, { headers: { 'X-API-Key': apiKey }, signal: controller.signal })
+          .finally(() => clearTimeout(timeoutId));
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+        const objects = data.objects || [];
+        // Mémorise chaque POI par uuid — permet de le retrouver depuis le
+        // bouton "Assigner à ce jour" d'une popup sans tout resérialiser.
+        objects.forEach(function (poi) { if (poi.uuid) poiCache.set(poi.uuid, poi); });
+
+        let shownHebergements = 0;
+        let shownRestaurants = 0;
+
+        if (wantHebergements) {
+          objects.filter(isAccommodationType).forEach(function (poi) {
+            const latlon = extractLatLonFromPoi(poi);
+            if (!latlon) return;
+            const marker = L.circleMarker([latlon.lat, latlon.lon], { radius: 8, fillColor: '#8E24AA', color: '#fff', weight: 2, fillOpacity: 0.95 })
+              .bindPopup(popupForHebergement(poi))
+              .addTo(hebergementsLayer);
+            // Contenu régénéré à chaque ouverture — le bouton "Assigner"
+            // dépend du jour sélectionné au moment du clic, pas de celui
+            // qui était actif quand ce marqueur a été créé.
+            marker.on('popupopen', function () { marker.setPopupContent(popupForHebergement(poi)); });
+            shownHebergements++;
+          });
+        }
+
+        if (wantRestaurants) {
+          objects.filter(isFoodType).forEach(function (poi) {
+            const latlon = extractLatLonFromPoi(poi);
+            if (!latlon) return;
+            L.circleMarker([latlon.lat, latlon.lon], { radius: 8, fillColor: '#D62828', color: '#fff', weight: 2, fillOpacity: 0.95 })
+              .bindPopup(popupForRestaurant(poi))
+              .addTo(restaurantsLayer);
+            shownRestaurants++;
+          });
+        }
+
+        const parts = [];
+        if (wantHebergements) parts.push(`${shownHebergements} hébergement(s)`);
+        if (wantRestaurants) parts.push(`${shownRestaurants} restaurant(s)`);
+        hebergementsStatusEl.textContent = `${parts.join(', ')} affiché(s) (sur ${objects.length} lieu(x) reçu(s) dans la zone).`;
+      } catch (err) {
+        console.error('[datatourisme] erreur', err);
+        hebergementsStatusEl.textContent = `Erreur : ${err.message} (vérifie ta clé API)`;
+      }
+    }
+
+    toggleHebergements.addEventListener('change', refreshDataTourismeLayers);
+    toggleRestaurants.addEventListener('change', refreshDataTourismeLayers);
+
+    // Centre la carte sur un point précis (sélection d'un jour, marqueur
+    // déplacé...) — zoom minimum 15 pour un vrai gros plan.
+    function flyToPoint(lat, lon) {
+      map.flyTo([lat, lon], Math.max(map.getZoom(), 15), { duration: 0.6 });
+    }
+
+    // =========================================================
+    // Plusieurs jours — mode Hébergements (recherche DATAtourisme le long
+    // de la trace) ou Étapes libres (segments égaux, ajustables à la main).
+    // Même logique et mêmes choix de comportement que sur EasyBiv :
+    // - édition manuelle d'un jour → recalcul automatique des jours
+    //   restants (redistribution de la distance restante) ;
+    // - si aucun hébergement proche du point idéal, on prend le plus
+    //   proche disponible même si éloigné.
+    // =========================================================
+
+    const DAY_COLORS = ['#7CB518', '#8E24AA', '#1E88E5', '#F57F17', '#C0392B', '#2E7D32', '#5C6660', '#B77D16'];
+    const DAYPLAN_SEARCH_BUFFER_KM = 5; // plus large que sur EasyBiv : hébergements plus rares, routes plus sinueuses
+
+    const dayplanModeHebergementsBtn = document.getElementById('dayplan-mode-hebergements');
+    const dayplanModeLibreBtn = document.getElementById('dayplan-mode-libre');
+    const dayplanConfigEl = document.getElementById('dayplan-config');
+    const dayplanNbDaysInput = document.getElementById('dayplan-nbdays');
+    const dayplanComputeBtn = document.getElementById('dayplan-compute-btn');
+    const dayplanResetBtn = document.getElementById('dayplan-reset-btn');
+    const dayplanStatusEl = document.getElementById('dayplan-status');
+    const dayplanResultsEl = document.getElementById('dayplan-results');
+    const dayplanLayer = L.layerGroup().addTo(map);
+
+    let dayplanMode = null; // 'hebergements' | 'libre'
+    let lodgingCandidates = null; // cache des hébergements DATAtourisme le long de toute la trace
+    let selectedDayIndex = null; // jour actuellement sélectionné (stats + surbrillance + assignation manuelle)
+    const CLIMB_PENALTY_MIN_PER_100M = 4; // heuristique : ~4 min ajoutées par 100m de D+, à affiner à l'usage
+    let dayNightPoints = [];
+    let dayNightIdealsKm = [];
+    let dayBoundariesKm = [];
+    let dayBoundaryMarkers = [];
+
+    // Efface le plan calculé (segments, marqueurs, listes) sans toucher au
+    // mode ni à l'affichage des réglages — utilisé aussi bien au reset
+    // complet qu'au changement de mode, où laisser traîner les marqueurs
+    // draggables du mode "libre" sur la carte serait déroutant.
+    function clearDayplanResults() {
+      lodgingCandidates = null;
+      selectedDayIndex = null;
+      dayNightPoints = [];
+      dayNightIdealsKm = [];
+      dayBoundariesKm = [];
+      dayBoundaryMarkers.forEach(m => map.removeLayer(m));
+      dayBoundaryMarkers = [];
+      dayplanLayer.clearLayers();
+      dayplanResultsEl.innerHTML = '';
+      dayplanStatusEl.textContent = '';
+    }
+
+    function resetDayplanState() {
+      clearDayplanResults();
+      dayplanMode = null;
+      dayplanConfigEl.style.display = 'none';
+      dayplanResetBtn.style.display = 'none';
+      dayplanModeHebergementsBtn.classList.remove('active');
+      dayplanModeLibreBtn.classList.remove('active');
+    }
+
+    function selectDayplanMode(mode) {
+      // Un changement de mode invalide le plan précédent : sans ce
+      // nettoyage, les marqueurs draggables du mode "libre" resteraient
+      // affichés après un passage en mode "hébergements".
+      if (dayplanMode !== mode) clearDayplanResults();
+
+      dayplanMode = mode;
+      dayplanModeHebergementsBtn.classList.toggle('active', mode === 'hebergements');
+      dayplanModeLibreBtn.classList.toggle('active', mode === 'libre');
+      dayplanConfigEl.style.display = 'block';
+      dayplanResetBtn.style.display = 'block';
+      dayplanStatusEl.textContent = '';
+    }
+    dayplanModeHebergementsBtn.addEventListener('click', () => selectDayplanMode('hebergements'));
+    dayplanModeLibreBtn.addEventListener('click', () => selectDayplanMode('libre'));
+    dayplanResetBtn.addEventListener('click', resetDayplanState);
+
+    async function fetchLodgingCandidatesAlongTrack() {
+      if (lodgingCandidates) return lodgingCandidates;
+
+      const apiKey = (localStorage.getItem(DATATOURISME_KEY_STORAGE) || datatourismeKeyInput.value || '').trim();
+      if (!apiKey) throw new Error('Renseigne une clé API DATAtourisme dans l\'onglet Points d\'intérêt.');
+
+      const bufferPolygon = turf.buffer(currentTrackLine, DAYPLAN_SEARCH_BUFFER_KM, { units: 'kilometers' });
+      const bbox = turf.bbox(bufferPolygon); // [west, south, east, north]
+      const geoBounding = `${bbox[3]},${bbox[0]},${bbox[1]},${bbox[2]}`; // top_left_lat,lon,bottom_right_lat,lon
+      const url = `${DATATOURISME_BASE}?geo_bounding=${encodeURIComponent(geoBounding)}&page_size=250` +
+        `&fields=uuid,label,type,isLocatedAt.geo,isLocatedAt.address`;
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 12000);
+      const response = await fetch(url, { headers: { 'X-API-Key': apiKey }, signal: controller.signal })
+        .finally(() => clearTimeout(timeoutId));
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const data = await response.json();
+      const objects = data.objects || [];
+
+      const candidates = [];
+      objects.filter(isAccommodationType).forEach(function (poi) {
+        const latlon = extractLatLonFromPoi(poi);
+        if (!latlon) return;
+        const pt = turf.point([latlon.lon, latlon.lat]);
+        const snapped = turf.nearestPointOnLine(currentTrackLine, pt, { units: 'kilometers' });
+        candidates.push({
+          poi: poi,
+          alongKm: snapped.properties.location,
+          distKm: snapped.properties.dist,
+          lat: latlon.lat,
+          lon: latlon.lon
+        });
+      });
+
+      lodgingCandidates = candidates;
+      return candidates;
+    }
+
+    function pickNearestCandidate(idealKm, candidates, excludeIds) {
+      let best = null;
+      let bestDelta = Infinity;
+      candidates.forEach(function (c) {
+        if (excludeIds.has(c.poi.uuid)) return;
+        const delta = Math.abs(c.alongKm - idealKm);
+        if (delta < bestDelta) { bestDelta = delta; best = c; }
+      });
+      return best;
+    }
+
+    function computeIdealNightsKm(nbDays, totalKm) {
+      const ideals = [];
+      for (let i = 1; i < nbDays; i++) ideals.push(totalKm * i / nbDays);
+      return ideals;
+    }
+
+    async function computeHebergementsPlan(nbDays) {
+      dayplanStatusEl.textContent = 'Recherche des hébergements le long de la trace…';
+      let candidates;
+      try {
+        candidates = await fetchLodgingCandidatesAlongTrack();
+      } catch (err) {
+        dayplanStatusEl.textContent = `Erreur : ${err.message}`;
+        return;
+      }
+
+      if (candidates.length === 0) {
+        dayplanStatusEl.textContent = 'Aucun hébergement trouvé le long de cette trace (essaie le mode Étapes libres).';
+        dayNightPoints = [];
+        renderDayplanResults();
+        return;
+      }
+
+      const totalKm = currentTrackTotalKm;
+      const ideals = computeIdealNightsKm(nbDays, totalKm);
+      const usedIds = new Set();
+
+      dayNightIdealsKm = ideals.slice();
+      dayNightPoints = ideals.map(function (idealKm) {
+        const best = pickNearestCandidate(idealKm, candidates, usedIds);
+        if (best) usedIds.add(best.poi.uuid);
+        return best;
+      });
+
+      const missing = dayNightPoints.filter(p => !p).length;
+      dayplanStatusEl.textContent = missing > 0
+        ? `Plan calculé — ${missing} nuit(s) sans hébergement disponible.`
+        : `Plan calculé sur ${candidates.length} hébergement(s) trouvé(s) le long de la trace.`;
+
+      renderDayplanResults();
+    }
+
+    function recomputeFromNightEdit(nightIndex, newCandidate) {
+      dayNightPoints[nightIndex] = newCandidate;
+      dayNightIdealsKm[nightIndex] = newCandidate.alongKm;
+
+      const totalKm = currentTrackTotalKm;
+      const remainingNights = dayNightPoints.length - (nightIndex + 1);
+
+      if (remainingNights > 0) {
+        const remainingKm = totalKm - newCandidate.alongKm;
+        const nbRemainingDays = remainingNights + 1;
+        const usedIds = new Set(dayNightPoints.slice(0, nightIndex + 1).filter(Boolean).map(p => p.poi.uuid));
+
+        for (let i = 0; i < remainingNights; i++) {
+          const idealKm = newCandidate.alongKm + (i + 1) * (remainingKm / nbRemainingDays);
+          dayNightIdealsKm[nightIndex + 1 + i] = idealKm;
+          const best = pickNearestCandidate(idealKm, lodgingCandidates, usedIds);
+          if (best) usedIds.add(best.poi.uuid);
+          dayNightPoints[nightIndex + 1 + i] = best;
+        }
+      }
+
+      flyToPoint(newCandidate.lat, newCandidate.lon);
+      renderDayplanResults();
+    }
+
+    function computeLibrePlan(nbDays) {
+      const totalKm = currentTrackTotalKm;
+      dayBoundariesKm = computeIdealNightsKm(nbDays, totalKm);
+      dayplanStatusEl.textContent = `Trace séparée en ${nbDays} jours — glisse les points sur la carte pour ajuster.`;
+      renderDayplanResults();
+      renderLibreMarkers();
+    }
+
+    function getDayBoundariesFull() {
+      const totalKm = currentTrackTotalKm;
+      const interior = dayplanMode === 'hebergements'
+        ? dayNightPoints.filter(Boolean).map(p => p.alongKm)
+        : dayBoundariesKm.slice();
+      return [0].concat(interior, [totalKm]);
+    }
+
+    function renderDaySegmentsOnMap() {
+      dayplanLayer.clearLayers();
+      const bounds = getDayBoundariesFull();
+      for (let i = 0; i < bounds.length - 1; i++) {
+        const segment = turf.lineSliceAlong(currentTrackLine, bounds[i], bounds[i + 1], { units: 'kilometers' });
+        const latlngs = segment.geometry.coordinates.map(c => [c[1], c[0]]);
+        const isSelected = selectedDayIndex === i;
+        // Jour sélectionné mis en avant (trait plus épais, pleine opacité) ;
+        // les autres estompés — sans sélection, tous affichés normalement.
+        const weight = isSelected ? 7 : 5;
+        const opacity = selectedDayIndex === null ? 0.9 : (isSelected ? 1 : 0.25);
+        L.polyline(latlngs, { color: DAY_COLORS[i % DAY_COLORS.length], weight: weight, opacity: opacity }).addTo(dayplanLayer);
+      }
+    }
+
+    function computeDayStats(dayIndex) {
+      const bounds = getDayBoundariesFull();
+      const startKm = bounds[dayIndex], endKm = bounds[dayIndex + 1];
+      const distanceKm = endKm - startKm;
+
+      let dPlus = 0;
+      if (elevationProfile && elevationProfile.length > 1) {
+        const segmentPts = elevationProfile.filter(p => p.distKm >= startKm && p.distKm <= endKm);
+        for (let i = 1; i < segmentPts.length; i++) {
+          const delta = segmentPts[i].ele - segmentPts[i - 1].ele;
+          if (delta > 0) dPlus += delta;
+        }
+      }
+
+      // Estimation grossière : vitesse forfaitaire + pénalité de temps liée
+      // au D+ (heuristique, pas un modèle physique précis).
+      const baseHours = distanceKm / BIKE_SPEED_KMH;
+      const climbPenaltyHours = (dPlus / 100) * (CLIMB_PENALTY_MIN_PER_100M / 60);
+      const estimatedHours = baseHours + climbPenaltyHours;
+
+      return { distanceKm: distanceKm, dPlus: Math.round(dPlus), estimatedHours: estimatedHours };
+    }
+
+    function formatDuration(hours) {
+      const totalMin = Math.round(hours * 60);
+      const h = Math.floor(totalMin / 60);
+      const m = totalMin % 60;
+      return h > 0 ? `${h}h${String(m).padStart(2, '0')}` : `${m} min`;
+    }
+
+    function selectDay(index) {
+      selectedDayIndex = selectedDayIndex === index ? null : index; // re-cliquer désélectionne
+      renderDayplanResults();
+
+      if (selectedDayIndex !== null) {
+        const bounds = getDayBoundariesFull();
+        const segment = turf.lineSliceAlong(currentTrackLine, bounds[selectedDayIndex], bounds[selectedDayIndex + 1], { units: 'kilometers' });
+        const latlngs = segment.geometry.coordinates.map(c => [c[1], c[0]]);
+        if (latlngs.length > 1) map.fitBounds(L.latLngBounds(latlngs), { padding: [40, 40] });
+      }
+    }
+
+    function renderLibreMarkers() {
+      dayBoundaryMarkers.forEach(m => map.removeLayer(m));
+      dayBoundaryMarkers = [];
+
+      dayBoundariesKm.forEach(function (km, i) {
+        const pt = turf.along(currentTrackLine, km, { units: 'kilometers' });
+        const [lon, lat] = pt.geometry.coordinates;
+
+        const marker = L.marker([lat, lon], {
+          draggable: true,
+          icon: L.divIcon({
+            className: '',
+            html: `<div style="width:16px;height:16px;border-radius:50%;background:${DAY_COLORS[i % DAY_COLORS.length]};border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,0.5);"></div>`,
+            iconSize: [16, 16],
+            iconAnchor: [8, 8]
+          })
+        }).addTo(map);
+
+        // Le glissement déclenche des dizaines d'événements par seconde, et
+        // chacun impliquait un nearestPointOnLine + un redécoupage complet
+        // des segments (~60 ms sur une trace de 5 000 points, bien plus sur
+        // mobile) : l'interface devenait inutilisable. On limite désormais
+        // le travail à une fois par frame d'affichage via
+        // requestAnimationFrame, et le rendu lourd des segments est reporté
+        // à la fin du glissement.
+        let dragFrame = null;
+        let pendingLatLng = null;
+
+        marker.on('drag', function (e) {
+          pendingLatLng = e.target.getLatLng();
+          if (dragFrame !== null) return;
+
+          dragFrame = requestAnimationFrame(function () {
+            dragFrame = null;
+            const rawLatLng = pendingLatLng;
+            if (!rawLatLng) return;
+
+            const snapped = turf.nearestPointOnLine(currentTrackLine, turf.point([rawLatLng.lng, rawLatLng.lat]), { units: 'kilometers' });
+            let newKm = snapped.properties.location;
+            const prevKm = i > 0 ? dayBoundariesKm[i - 1] : 0;
+            const nextKm = i < dayBoundariesKm.length - 1 ? dayBoundariesKm[i + 1] : currentTrackTotalKm;
+            newKm = Math.max(prevKm + 0.05, Math.min(nextKm - 0.05, newKm));
+            dayBoundariesKm[i] = newKm;
+
+            const snappedLatLng = turf.along(currentTrackLine, newKm, { units: 'kilometers' }).geometry.coordinates;
+            marker.setLatLng([snappedLatLng[1], snappedLatLng[0]]);
+            // Seule la liste (calcul trivial) est rafraîchie en direct ;
+            // le redécoupage des segments attend la fin du glissement.
+            renderDayplanResultsListOnly();
+          });
+        });
+
+        marker.on('dragend', function (e) {
+          if (dragFrame !== null) { cancelAnimationFrame(dragFrame); dragFrame = null; }
+          renderDaySegmentsOnMap();
+          renderDayplanResultsListOnly();
+          const finalLatLng = e.target.getLatLng();
+          flyToPoint(finalLatLng.lat, finalLatLng.lng);
+        });
+
+        dayBoundaryMarkers.push(marker);
+      });
+
+      renderDaySegmentsOnMap();
+    }
+
+    function renderDayplanResultsListOnly() {
+      const bounds = getDayBoundariesFull();
+      let html = '';
+      for (let i = 0; i < bounds.length - 1; i++) {
+        const distKm = (bounds[i + 1] - bounds[i]).toFixed(1);
+        html += `<div class="day-card"><div class="day-card-header">` +
+          `<div class="day-card-badge" style="background:${DAY_COLORS[i % DAY_COLORS.length]}">${i + 1}</div>` +
+          `Jour ${i + 1}<div class="day-card-dist">${distKm} km</div></div></div>`;
+      }
+      dayplanResultsEl.innerHTML = html;
+    }
+
+    function renderDayplanResults() {
+      renderDaySegmentsOnMap();
+      const bounds = getDayBoundariesFull();
+      let html = '';
+
+      for (let i = 0; i < bounds.length - 1; i++) {
+        const distKm = (bounds[i + 1] - bounds[i]).toFixed(1);
+        const isSelected = selectedDayIndex === i;
+        html += `<div class="day-card${isSelected ? ' selected' : ''}"><div class="day-card-header">` +
+          `<div class="day-card-badge" style="background:${DAY_COLORS[i % DAY_COLORS.length]}">${i + 1}</div>` +
+          `Jour ${i + 1}<div class="day-card-dist">${distKm} km</div></div>`;
+
+        if (dayplanMode === 'hebergements' && i < dayNightPoints.length) {
+          const night = dayNightPoints[i];
+          if (night) {
+            const label = poiLabel(night.poi);
+            html += `<div class="day-card-endpoint">Arrivée : ${escapeHtml(label)}</div>`;
+            html += buildNightSelect(i, night);
+            html += `<div class="day-card-detail-toggle" data-index="${i}">Voir les détails ▾</div>`;
+            html += `<div class="day-card-detail" id="night-detail-${i}" style="display:none;"></div>`;
+          } else {
+            html += `<div class="day-card-endpoint">Aucun hébergement disponible pour cette nuit</div>`;
+          }
+        } else if (i === bounds.length - 2) {
+          html += `<div class="day-card-endpoint">Arrivée : fin de la trace</div>`;
+        }
+
+        if (isSelected) {
+          const stats = computeDayStats(i);
+          html += `<div class="day-stats">` +
+            `<span>⛰️ ${stats.dPlus} m D+</span>` +
+            `<span>⏱️ ~${formatDuration(stats.estimatedHours)}</span>` +
+            `</div>`;
+          if (dayplanMode === 'hebergements') {
+            html += `<div class="day-card-hint" style="margin-left:30px;">Clique un hébergement sur la carte pour l'assigner à ce jour.</div>`;
+          }
+        }
+
+        html += `<button class="day-select-btn" data-select-index="${i}">${isSelected ? '✓ Jour sélectionné (recliquer pour désélectionner)' : 'Sélectionner ce jour'}</button>`;
+        html += `</div>`;
+      }
+
+      dayplanResultsEl.innerHTML = html;
+
+      dayplanResultsEl.querySelectorAll('.day-select-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          selectDay(Number(btn.dataset.selectIndex));
+        });
+      });
+
+      if (dayplanMode === 'hebergements') {
+        dayplanResultsEl.querySelectorAll('.day-card-select').forEach(function (sel) {
+          sel.addEventListener('change', function () {
+            const nightIndex = Number(sel.dataset.nightIndex);
+            const uuid = sel.value;
+            const candidate = lodgingCandidates.find(c => c.poi.uuid === uuid);
+            if (candidate) recomputeFromNightEdit(nightIndex, candidate);
+          });
+        });
+        dayplanResultsEl.querySelectorAll('.day-card-detail-toggle').forEach(function (toggle) {
+          toggle.addEventListener('click', function () {
+            const idx = Number(toggle.dataset.index);
+            const detailEl = document.getElementById(`night-detail-${idx}`);
+            const isHidden = detailEl.style.display === 'none';
+            detailEl.style.display = isHidden ? 'block' : 'none';
+            toggle.textContent = isHidden ? 'Masquer les détails ▴' : 'Voir les détails ▾';
+            if (isHidden && !detailEl.dataset.filled) {
+              detailEl.dataset.filled = '1';
+              const night = dayNightPoints[idx];
+              if (night) detailEl.innerHTML = popupForHebergement(night.poi);
+            }
+          });
+        });
+      }
+    }
+
+    function buildNightSelect(nightIndex, currentNight) {
+      const usedIds = new Set(dayNightPoints.filter(Boolean).map(p => p.poi.uuid));
+      usedIds.delete(currentNight.poi.uuid);
+
+      const idealKm = dayNightIdealsKm[nightIndex];
+      const alternatives = lodgingCandidates
+        .filter(c => !usedIds.has(c.poi.uuid))
+        .slice()
+        .sort((a, b) => Math.abs(a.alongKm - idealKm) - Math.abs(b.alongKm - idealKm))
+        .slice(0, 6);
+
+      if (!alternatives.some(a => a.poi.uuid === currentNight.poi.uuid)) alternatives.unshift(currentNight);
+
+      let html = `<select class="day-card-select" data-night-index="${nightIndex}">`;
+      alternatives.forEach(function (c) {
+        const label = poiLabel(c.poi);
+        const selected = c.poi.uuid === currentNight.poi.uuid ? ' selected' : '';
+        html += `<option value="${c.poi.uuid}"${selected}>${escapeHtml(label)} — km ${c.alongKm.toFixed(1)}</option>`;
+      });
+      html += `</select>`;
+      return html;
+    }
+
+    dayplanComputeBtn.addEventListener('click', async function () {
+      const nbDays = parseInt(dayplanNbDaysInput.value, 10);
+      if (!nbDays || nbDays < 1 || !currentTrackLine) return;
+
+      // Un nouveau calcul redéfinit complètement le découpage : une
+      // sélection issue du plan précédent n'a plus de sens et peut même
+      // pointer au-delà du nouveau nombre de jours — ce qui estomperait
+      // toute la trace sans qu'aucun jour n'apparaisse sélectionné.
+      selectedDayIndex = null;
+
+      dayplanComputeBtn.disabled = true;
+      try {
+        if (dayplanMode === 'hebergements') await computeHebergementsPlan(nbDays);
+        else if (dayplanMode === 'libre') computeLibrePlan(nbDays);
+      } catch (err) {
+        console.error('[dayplan] erreur', err);
+        dayplanStatusEl.textContent = `Erreur : ${err.message}`;
+      } finally {
+        dayplanComputeBtn.disabled = false;
+      }
+    });
+
+    // =========================================================
+    // Météo — Météo-France (AROME/ARPEGE) via Open-Meteo, sans clé API.
+    // Un point toutes les 2h de pédalage (vitesse forfaitaire 15 km/h),
+    // pause déjeuner d'1h insérée dès que l'horaire réel franchit midi.
+    // Prévision limitée à 4 jours par l'API elle-même.
+    // =========================================================
+
+    const WEATHER_API_BASE = 'https://api.open-meteo.com/v1/meteofrance';
+    const BIKE_SPEED_KMH = 15;
+    const CHECKPOINT_INTERVAL_H = 2;
+    const LUNCH_BREAK_CLOCK_HOUR = 12;
+    const LUNCH_BREAK_DURATION_H = 1;
+    const MAX_FORECAST_DAYS = 4;
+
+    const WMO_WEATHER = {
+      0: { label: 'Ciel dégagé', icon: '☀️' }, 1: { label: 'Peu nuageux', icon: '🌤️' },
+      2: { label: 'Partiellement nuageux', icon: '⛅' }, 3: { label: 'Couvert', icon: '☁️' },
+      45: { label: 'Brouillard', icon: '🌫️' }, 48: { label: 'Brouillard givrant', icon: '🌫️' },
+      51: { label: 'Bruine légère', icon: '🌦️' }, 53: { label: 'Bruine modérée', icon: '🌦️' },
+      55: { label: 'Bruine dense', icon: '🌧️' }, 56: { label: 'Bruine verglaçante légère', icon: '🌧️' },
+      57: { label: 'Bruine verglaçante dense', icon: '🌧️' }, 61: { label: 'Pluie légère', icon: '🌦️' },
+      63: { label: 'Pluie modérée', icon: '🌧️' }, 65: { label: 'Pluie forte', icon: '🌧️' },
+      66: { label: 'Pluie verglaçante légère', icon: '🌧️' }, 67: { label: 'Pluie verglaçante forte', icon: '🌧️' },
+      71: { label: 'Neige légère', icon: '🌨️' }, 73: { label: 'Neige modérée', icon: '🌨️' },
+      75: { label: 'Neige forte', icon: '❄️' }, 77: { label: 'Grains de neige', icon: '❄️' },
+      80: { label: 'Averses légères', icon: '🌦️' }, 81: { label: 'Averses modérées', icon: '🌧️' },
+      82: { label: 'Averses violentes', icon: '⛈️' }, 85: { label: 'Averses de neige légères', icon: '🌨️' },
+      86: { label: 'Averses de neige fortes', icon: '❄️' }, 95: { label: 'Orage', icon: '⛈️' },
+      96: { label: 'Orage avec grêle', icon: '⛈️' }, 99: { label: 'Orage violent avec grêle', icon: '⛈️' }
+    };
+
+    const weatherStartDateInput = document.getElementById('weather-start-date');
+    const weatherStartTimeInput = document.getElementById('weather-start-time');
+    const weatherComputeBtn = document.getElementById('weather-compute-btn');
+    const weatherStatusEl = document.getElementById('weather-status');
+    const weatherResultsEl = document.getElementById('weather-results');
+    weatherStartDateInput.value = new Date().toISOString().slice(0, 10);
+
+    function elevationAtKm(km) {
+      if (!elevationProfile || elevationProfile.length === 0) return null;
+      let best = elevationProfile[0];
+      let bestDelta = Infinity;
+      for (let i = 0; i < elevationProfile.length; i++) {
+        const delta = Math.abs(elevationProfile[i].distKm - km);
+        if (delta < bestDelta) { bestDelta = delta; best = elevationProfile[i]; }
+        else if (elevationProfile[i].distKm > km) break;
+      }
+      return best.ele;
+    }
+
+    function buildWeatherCheckpoints() {
+      const bounds = getDayBoundariesFull();
+      const startDateStr = weatherStartDateInput.value;
+      const startTimeStr = weatherStartTimeInput.value || '08:00';
+      const checkpoints = [];
+
+      // Sans cette garde, un champ date vidé par l'utilisateur produit une
+      // Invalid Date : tous les horodatages deviennent NaN et la liste
+      // s'affiche pleine de "Invalid Date" au lieu d'une erreur claire.
+      if (!startDateStr || isNaN(new Date(startDateStr + 'T00:00:00').getTime())) {
+        throw new Error('Renseigne une date de départ valide.');
+      }
+
+      for (let dayIndex = 0; dayIndex < bounds.length - 1; dayIndex++) {
+        const dayStartKm = bounds[dayIndex];
+        const dayEndKm = bounds[dayIndex + 1];
+        const dayDistanceKm = dayEndKm - dayStartKm;
+        const totalRideHours = dayDistanceKm / BIKE_SPEED_KMH;
+
+        const departureTimeStr = dayIndex === 0 ? startTimeStr : '08:00';
+        const [depH, depM] = departureTimeStr.split(':').map(Number);
+        const dayDate = new Date(startDateStr + 'T00:00:00');
+        dayDate.setDate(dayDate.getDate() + dayIndex);
+        const departureDateTime = new Date(dayDate);
+        departureDateTime.setHours(depH, depM, 0, 0);
+
+        const noonDateTime = new Date(dayDate);
+        noonDateTime.setHours(LUNCH_BREAK_CLOCK_HOUR, 0, 0, 0);
+        const rideHoursAtNoon = (noonDateTime.getTime() - departureDateTime.getTime()) / 3600000;
+        const hasLunchBreak = rideHoursAtNoon > 0 && rideHoursAtNoon < totalRideHours;
+
+        const hourMarks = [];
+        for (let h = 0; h < totalRideHours; h += CHECKPOINT_INTERVAL_H) hourMarks.push(h);
+        if (hourMarks.length === 0 || hourMarks[hourMarks.length - 1] < totalRideHours) hourMarks.push(totalRideHours);
+        if (hasLunchBreak && !hourMarks.some(h => Math.abs(h - rideHoursAtNoon) < 0.05)) hourMarks.push(rideHoursAtNoon);
+        hourMarks.sort((a, b) => a - b);
+
+        hourMarks.forEach(function (h) {
+          const km = dayStartKm + Math.min(h, totalRideHours) * BIKE_SPEED_KMH;
+          const pt = turf.along(currentTrackLine, km, { units: 'kilometers' });
+          const pauseOffsetH = hasLunchBreak && h >= rideHoursAtNoon ? LUNCH_BREAK_DURATION_H : 0;
+          const timestamp = new Date(departureDateTime.getTime() + (h + pauseOffsetH) * 3600 * 1000);
+
+          checkpoints.push({
+            dayIndex: dayIndex,
+            km: km,
+            lat: pt.geometry.coordinates[1],
+            lon: pt.geometry.coordinates[0],
+            elevation: elevationAtKm(km),
+            timestamp: timestamp,
+            isLunchBreak: hasLunchBreak && Math.abs(h - rideHoursAtNoon) < 0.05,
+            isArrival: Math.abs(h - totalRideHours) < 0.001
+          });
+        });
+      }
+      return checkpoints;
+    }
+
+    function toHourlyTimeKey(date) {
+      const rounded = new Date(date);
+      rounded.setMinutes(rounded.getMinutes() >= 30 ? 60 : 0, 0, 0);
+      const pad = n => String(n).padStart(2, '0');
+      return `${rounded.getFullYear()}-${pad(rounded.getMonth() + 1)}-${pad(rounded.getDate())}T${pad(rounded.getHours())}:00`;
+    }
+
+    async function fetchWeatherForCheckpoints(checkpoints) {
+      // L'API ne fournit que MAX_FORECAST_DAYS jours de prévision : inutile
+      // d'envoyer les coordonnées des points au-delà, on les marque
+      // directement indisponibles. Sur une trace longue, ça évite une URL
+      // inutilement massive et des dizaines de coordonnées ignorées côté
+      // serveur.
+      const horizon = new Date();
+      horizon.setDate(horizon.getDate() + MAX_FORECAST_DAYS);
+      horizon.setHours(23, 59, 59, 999);
+
+      const inRange = [];
+      const outOfRangeIdx = new Set();
+      checkpoints.forEach(function (c, i) {
+        if (c.timestamp.getTime() <= horizon.getTime()) inRange.push({ checkpoint: c, originalIndex: i });
+        else outOfRangeIdx.add(i);
+      });
+
+      // Aucun point dans la fenêtre : rien à demander au réseau.
+      if (inRange.length === 0) {
+        return checkpoints.map(c => Object.assign({}, c, { available: false }));
+      }
+
+      const lats = inRange.map(e => e.checkpoint.lat.toFixed(4)).join(',');
+      const lons = inRange.map(e => e.checkpoint.lon.toFixed(4)).join(',');
+      const haveAllElevations = inRange.every(e => typeof e.checkpoint.elevation === 'number');
+      const elevationParam = haveAllElevations
+        ? `&elevation=${inRange.map(e => e.checkpoint.elevation.toFixed(0)).join(',')}`
+        : '';
+      const hourlyVars = 'temperature_2m,precipitation,weather_code,wind_speed_10m,wind_gusts_10m';
+      const url = `${WEATHER_API_BASE}?latitude=${lats}&longitude=${lons}${elevationParam}` +
+        `&hourly=${hourlyVars}&timezone=Europe%2FParis&forecast_days=${MAX_FORECAST_DAYS}`;
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
+      const response = await fetch(url, { signal: controller.signal }).finally(() => clearTimeout(timeoutId));
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const data = await response.json();
+      const results = Array.isArray(data) ? data : [data];
+
+      // Réassocie les résultats à leur point d'origine — l'API répond dans
+      // l'ordre des coordonnées envoyées, qui n'est plus celui de la liste
+      // complète depuis le filtrage ci-dessus.
+      const byOriginalIndex = new Map();
+      inRange.forEach(function (entry, i) {
+        byOriginalIndex.set(entry.originalIndex, results[i]);
+      });
+
+      return checkpoints.map(function (checkpoint, i) {
+        if (outOfRangeIdx.has(i)) return Object.assign({}, checkpoint, { available: false });
+        const result = byOriginalIndex.get(i);
+        if (!result || !result.hourly || !result.hourly.time) return Object.assign({}, checkpoint, { available: false });
+        const targetKey = toHourlyTimeKey(checkpoint.timestamp);
+        const idx = result.hourly.time.indexOf(targetKey);
+        if (idx === -1) return Object.assign({}, checkpoint, { available: false });
+        return Object.assign({}, checkpoint, {
+          available: true,
+          temperature: result.hourly.temperature_2m ? result.hourly.temperature_2m[idx] : null,
+          precipitation: result.hourly.precipitation ? result.hourly.precipitation[idx] : null,
+          weatherCode: result.hourly.weather_code ? result.hourly.weather_code[idx] : null,
+          windSpeed: result.hourly.wind_speed_10m ? result.hourly.wind_speed_10m[idx] : null,
+          windGusts: result.hourly.wind_gusts_10m ? result.hourly.wind_gusts_10m[idx] : null
+        });
+      });
+    }
+
+    function renderWeatherResults(checkpointsWithWeather) {
+      let html = '';
+      let currentDay = -1;
+      checkpointsWithWeather.forEach(function (c) {
+        if (c.dayIndex !== currentDay) {
+          currentDay = c.dayIndex;
+          const dateLabel = c.timestamp.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+          html += `<div class="weather-day-title">Jour ${currentDay + 1} — ${dateLabel}</div>`;
+        }
+        const timeLabel = c.timestamp.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+        const kmLabel = `km ${c.km.toFixed(1)}`;
+
+        if (!c.available) {
+          html += `<div class="weather-checkpoint"><div class="weather-cp-time">${timeLabel}</div>` +
+            `<div class="weather-cp-detail weather-cp-na">Prévision indisponible (au-delà de ${MAX_FORECAST_DAYS} jours)</div>` +
+            `<div class="weather-cp-km">${kmLabel}</div></div>`;
+          return;
+        }
+
+        const weatherInfo = WMO_WEATHER[c.weatherCode] || { label: 'Inconnu', icon: '❓' };
+        let detail = `${weatherInfo.label} — ${Math.round(c.temperature)}°C` +
+          (c.precipitation > 0 ? `, ${c.precipitation.toFixed(1)} mm` : '') +
+          `, vent ${Math.round(c.windSpeed)} km/h` +
+          (c.windGusts && c.windGusts > c.windSpeed + 10 ? ` (rafales ${Math.round(c.windGusts)})` : '');
+        let prefix = '';
+        if (c.isLunchBreak) prefix = '🍽️ Pause déjeuner (~1h) — ';
+        else if (c.isArrival) prefix = '🏁 Arrivée — ';
+
+        html += `<div class="weather-checkpoint"><div class="weather-cp-time">${timeLabel}</div>` +
+          `<div class="weather-cp-icon">${weatherInfo.icon}</div>` +
+          `<div class="weather-cp-detail">${escapeHtml(prefix + detail)}</div>` +
+          `<div class="weather-cp-km">${kmLabel}</div></div>`;
+      });
+      weatherResultsEl.innerHTML = html;
+    }
+
+    weatherComputeBtn.addEventListener('click', async function () {
+      if (!currentTrackLine) return;
+      weatherComputeBtn.disabled = true;
+      weatherStatusEl.textContent = 'Calcul des points de contrôle…';
+      weatherResultsEl.innerHTML = '';
+      try {
+        const checkpoints = buildWeatherCheckpoints();
+        weatherStatusEl.textContent = `Récupération de la météo pour ${checkpoints.length} point(s)…`;
+        const withWeather = await fetchWeatherForCheckpoints(checkpoints);
+        renderWeatherResults(withWeather);
+        const unavailableCount = withWeather.filter(c => !c.available).length;
+        weatherStatusEl.textContent = unavailableCount > 0
+          ? `${withWeather.length - unavailableCount} point(s) avec prévision, ${unavailableCount} hors de portée (> ${MAX_FORECAST_DAYS} jours).`
+          : `Prévisions chargées pour ${withWeather.length} point(s).`;
+      } catch (err) {
+        console.error('[weather] erreur', err);
+        weatherStatusEl.textContent = `Erreur : ${err.message}`;
+      } finally {
+        weatherComputeBtn.disabled = false;
+      }
+    });
+
+    // =========================================================
+    // Export hors-ligne — génère un fichier HTML autonome (tuiles, points
+    // des 4 catégories, Leaflet inclus) qui s'ouvre sans connexion réseau.
+    // Même architecture que sur EasyBiv : tuiles en base64, données
+    // embarquées en JSON, Leaflet inline.
+    // =========================================================
+
+    const OFFLINE_ZOOM_LEVELS = [13, 14, 15]; // volontairement limité, pour la taille du fichier
+    const TILE_CONCURRENCY_LIMIT = 6;
+    const BLANK_TILE_DATA_URI = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=';
+
+    const offlineExportCard = document.getElementById('offline-export-card');
+    const offlineBufferInput = document.getElementById('offline-buffer');
+    const offlineBufferLabel = document.getElementById('offline-buffer-label');
+    const offlineDownloadBtn = document.getElementById('offline-download-btn');
+    const offlineDownloadStatusEl = document.getElementById('offline-download-status');
+
+    function updateOfflineBufferLabel() {
+      const km = offlineBufferInput.value;
+      offlineBufferLabel.textContent = `±${km} km (${km * 2} km de large)`;
+    }
+    offlineBufferInput.addEventListener('input', updateOfflineBufferLabel);
+    updateOfflineBufferLabel();
+
+    function lon2tileX(lon, zoom) { return Math.floor((lon + 180) / 360 * Math.pow(2, zoom)); }
+    function lat2tileY(lat, zoom) {
+      const rad = lat * Math.PI / 180;
+      return Math.floor((1 - Math.log(Math.tan(rad) + 1 / Math.cos(rad)) / Math.PI) / 2 * Math.pow(2, zoom));
+    }
+    function offlineTileUrlFor(basemapId, z, x, y) {
+      if (basemapId === 'cyclosm') return `https://a.tile-cyclosm.openstreetmap.fr/cyclosm/${z}/${x}/${y}.png`;
+      return `https://a.tile.opentopomap.org/${z}/${x}/${y}.png`;
+    }
+    function blobToBase64(blob) {
+      return new Promise(function (resolve, reject) {
+        const reader = new FileReader();
+        reader.onloadend = function () { resolve(reader.result); };
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    }
+    async function fetchTileAsBase64(url) {
+      try {
+        const response = await fetchWithTimeout(url, 10000);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return await blobToBase64(await response.blob());
+      } catch (directErr) {
+        console.warn('[offline] tuile en direct échouée, tentative via proxy :', url, directErr.message);
+        const proxiedUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+        const response = await fetchWithTimeout(proxiedUrl, 10000);
+        if (!response.ok) throw new Error(`HTTP ${response.status} (via proxy)`);
+        return await blobToBase64(await response.blob());
+      }
+    }
+    async function runWithConcurrencyLimit(tasks, limit, onProgress) {
+      let index = 0, completed = 0;
+      const results = new Array(tasks.length);
+      async function worker() {
+        while (index < tasks.length) {
+          const current = index++;
+          try { results[current] = await tasks[current](); }
+          catch (err) { results[current] = null; console.error('[offline] tâche échouée', err); }
+          completed++;
+          if (onProgress) onProgress(completed, tasks.length);
+        }
+      }
+      const workers = [];
+      for (let i = 0; i < limit; i++) workers.push(worker());
+      await Promise.all(workers);
+      return results;
+    }
+
+    // Un seul appel Overpass (ateliers + eau) et un seul appel DATAtourisme
+    // (hébergements + restaurants, si une clé est renseignée) pour tout le
+    // corridor — même logique d'économie de requêtes qu'ailleurs dans l'app.
+    async function fetchCorridorPoints(bufferBbox, onProgress) {
+      const points = [];
+      const south = bufferBbox[1], west = bufferBbox[0], north = bufferBbox[3], east = bufferBbox[2];
+      const bounds = L.latLngBounds([south, west], [north, east]);
+
+      onProgress('Recherche des ateliers vélo…');
+      try {
+        await ensurePoiTilesLoaded(poiTileIdsForBounds(bounds));
+        poiFeatures.forEach(function (f) {
+          if (!bounds.contains([f.lat, f.lon])) return;
+          const style = POI_CATEGORY_STYLE[f.props.category];
+          if (!style) return;
+          points.push({ category: f.props.category, name: f.props.name || style.label, lat: f.lat, lon: f.lon, detail: style.label });
+        });
+      } catch (err) {
+        console.warn('[offline] tuiles POI vélo indisponibles pour le corridor —', err.message);
+      }
+
+      onProgress("Recherche des points d'eau…");
+      try {
+        const bboxStr = `${south},${west},${north},${east}`;
+        const url = `${OSM_WATER_ODS_URL}?dataset=${OSM_WATER_DATASET}&geofilter.bbox=${bboxStr}&rows=500`;
+        const data = await fetchJsonWithFallback(url);
+        (data.records || []).forEach(function (rec) {
+          const geo = rec.geometry && rec.geometry.coordinates;
+          if (!geo || geo.length < 2) return;
+          const fields = rec.fields || {};
+          points.push({ category: 'eau', name: fields.name || "Point d'eau", lat: geo[1], lon: geo[0], detail: "Point d'eau potable" });
+        });
+      } catch (err) {
+        console.warn("[offline] points d'eau indisponibles pour le corridor —", err.message);
+      }
+
+      const apiKey = (localStorage.getItem(DATATOURISME_KEY_STORAGE) || datatourismeKeyInput.value || '').trim();
+      if (apiKey) {
+        onProgress('Recherche hébergements et restaurants…');
+        try {
+          const geoBounding = `${north},${west},${south},${east}`;
+          const url = `${DATATOURISME_BASE}?geo_bounding=${encodeURIComponent(geoBounding)}&page_size=100` +
+            `&fields=uuid,label,type,isLocatedAt.geo,isLocatedAt.address`;
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 12000);
+          const response = await fetch(url, { headers: { 'X-API-Key': apiKey }, signal: controller.signal })
+            .finally(() => clearTimeout(timeoutId));
+          if (response.ok) {
+            const data = await response.json();
+            const objects = data.objects || [];
+            objects.filter(isAccommodationType).forEach(function (poi) {
+              const latlon = extractLatLonFromPoi(poi);
+              if (!latlon) return;
+              points.push({ category: 'hebergement', name: poiLabel(poi), lat: latlon.lat, lon: latlon.lon, detail: poiAddressLine(poi) || 'Hébergement' });
+            });
+            objects.filter(isFoodType).forEach(function (poi) {
+              const latlon = extractLatLonFromPoi(poi);
+              if (!latlon) return;
+              points.push({ category: 'restaurant', name: poiLabel(poi), lat: latlon.lat, lon: latlon.lon, detail: restaurantTypeLabel(poi) });
+            });
+          }
+        } catch (err) {
+          console.warn('[offline] DATAtourisme indisponible pour le corridor —', err.message);
+        }
+      } else {
+        console.log('[offline] pas de clé DATAtourisme — hébergements/restaurants exclus du corridor');
+      }
+
+      return points;
+    }
+
+    offlineDownloadBtn.addEventListener('click', async function () {
+      if (!currentTrackLine) return;
+      offlineDownloadBtn.disabled = true;
+
+      try {
+        const bufferKm = parseInt(offlineBufferInput.value, 10);
+        const bufferPolygon = turf.buffer(currentTrackLine, bufferKm, { units: 'kilometers' });
+        const bbox = turf.bbox(bufferPolygon); // [west, south, east, north]
+
+        offlineDownloadStatusEl.textContent = 'Recherche des points le long du corridor…';
+        const points = await fetchCorridorPoints(bbox, function (msg) { offlineDownloadStatusEl.textContent = msg; });
+
+        const tileRequests = [];
+        OFFLINE_ZOOM_LEVELS.forEach(function (z) {
+          const xMin = lon2tileX(bbox[0], z), xMax = lon2tileX(bbox[2], z);
+          const yMin = lat2tileY(bbox[3], z), yMax = lat2tileY(bbox[1], z);
+          for (let x = xMin; x <= xMax; x++) for (let y = yMin; y <= yMax; y++) tileRequests.push({ z: z, x: x, y: y });
+        });
+
+        offlineDownloadStatusEl.textContent = `Préparation : ${tileRequests.length} tuiles à télécharger…`;
+        const tileData = {};
+        const tileTasks = tileRequests.map(function (t) {
+          return async function () {
+            const key = `${t.z}/${t.x}/${t.y}`;
+            tileData[key] = await fetchTileAsBase64(offlineTileUrlFor(currentBasemapId, t.z, t.x, t.y));
+          };
+        });
+        await runWithConcurrencyLimit(tileTasks, TILE_CONCURRENCY_LIMIT, function (done, total) {
+          offlineDownloadStatusEl.textContent = `Téléchargement des tuiles… ${done}/${total}`;
+        });
+
+        offlineDownloadStatusEl.textContent = 'Préparation du fichier…';
+        const [leafletCss, leafletJs] = await Promise.all([
+          fetch('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css').then(r => r.text()),
+          fetch('https://unpkg.com/leaflet@1.9.4/dist/leaflet.js').then(r => r.text())
+        ]);
+
+        const trackCoords = currentTrackLine.geometry.coordinates;
+        const distanceKm = currentTrackTotalKm;
+
+        const offlineHtml = buildOfflineHtml({
+          leafletCss: leafletCss,
+          leafletJs: leafletJs,
+          tileData: tileData,
+          zoomLevels: OFFLINE_ZOOM_LEVELS,
+          basemapLabel: currentBasemapId === 'cyclosm' ? 'CyclOSM' : 'OpenTopoMap',
+          bbox: bbox,
+          trackCoords: trackCoords,
+          distanceKm: distanceKm,
+          points: points
+        });
+
+        const blob = new Blob([offlineHtml], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const dateStr = new Date().toISOString().slice(0, 10);
+        a.href = url;
+        a.download = `cyclotrip-hors-ligne-${dateStr}.html`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        const sizeMb = (offlineHtml.length / (1024 * 1024)).toFixed(1);
+        offlineDownloadStatusEl.textContent = `Fichier généré (~${sizeMb} Mo, ${points.length} point(s)) — vérifie ton dossier de téléchargements.`;
+      } catch (err) {
+        console.error('[offline] erreur génération fichier', err);
+        offlineDownloadStatusEl.textContent = `Erreur : ${err.message}`;
+      } finally {
+        offlineDownloadBtn.disabled = false;
+      }
+    });
+
+    // Échappe toute séquence "</script" dans un JSON avant de l'injecter
+    // dans un <script> inline du fichier généré.
+    function safeJsonForInlineScript(value) {
+      return JSON.stringify(value).replace(/<\/script/gi, '<\\/script');
+    }
+
+    function buildOfflineHtml(data) {
+      const pointsJson = safeJsonForInlineScript(data.points);
+      const tileDataJson = safeJsonForInlineScript(data.tileData);
+      const trackCoordsJson = safeJsonForInlineScript(data.trackCoords);
+      const zoomLevelsJson = safeJsonForInlineScript(data.zoomLevels);
+      const centerLat = (data.bbox[1] + data.bbox[3]) / 2;
+      const centerLon = (data.bbox[0] + data.bbox[2]) / 2;
+
+      return `<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>CycloTrip — hors ligne</title>
+<style>${data.leafletCss}</style>
+<style>
+  :root { --ink:#14181A; --ink-soft:#5C6660; --border:#E6E8E1; --brand:#7CB518; --brand-dark:#5C8A11; }
+  html, body { margin:0; padding:0; height:100%; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif; color:var(--ink); }
+  #map { position:absolute; top:0; bottom:0; left:0; right:320px; background:#E8E6DC; }
+  #sidebar { position:absolute; top:0; bottom:0; right:0; width:320px; overflow-y:auto; background:#F4F5F1; border-left:1px solid var(--border); padding:14px; box-sizing:border-box; }
+  body.sidebar-collapsed #map { right:0; }
+  body.sidebar-collapsed #sidebar { display:none; }
+  @media (max-width:700px) {
+    #map { right:0; height:55%; }
+    #sidebar { top:55%; left:0; width:100%; height:45%; border-left:none; border-top:1px solid var(--border); }
+    body.sidebar-collapsed #map { height:100%; }
+  }
+  .banner { background:#FBF0DC; border:1px solid #D9971F; color:#5C4718; border-radius:10px; padding:8px 10px; font-size:11px; line-height:1.5; margin-bottom:12px; }
+  h3 { margin:0 0 10px; font-size:14px; }
+  .legend label { display:flex; align-items:center; gap:6px; font-size:12px; font-weight:600; color:var(--ink-soft); padding:6px 0; cursor:pointer; }
+  .legend .dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+  .pt-item { border-top:1px solid var(--border); padding:8px 0; }
+  .pt-name { font-weight:700; font-size:12.5px; }
+  .pt-detail { font-size:11.5px; color:var(--ink-soft); }
+  #sidebar-toggle, #locate-btn { position:absolute; z-index:1000; background:white; border:none; border-radius:999px; box-shadow:0 6px 18px rgba(20,24,26,0.25); cursor:pointer; }
+  #sidebar-toggle { top:12px; right:334px; padding:9px 14px; font-size:12px; font-weight:700; color:var(--ink-soft); }
+  body.sidebar-collapsed #sidebar-toggle { right:12px; }
+  @media (max-width:700px) { #sidebar-toggle { right:12px; } }
+  #locate-btn { bottom:22px; right:334px; width:42px; height:42px; }
+  @media (max-width:700px) { #locate-btn { right:12px; bottom:calc(45% + 12px); } }
+  #locate-btn.active { background:#1E88E5; color:white; }
+</style>
+</head>
+<body>
+<div id="map"></div>
+<button id="sidebar-toggle">Masquer la liste</button>
+<button id="locate-btn">📍</button>
+<div id="sidebar">
+  <div class="banner">Version hors ligne (${escapeHtml(data.basemapLabel)}) — générée le ${new Date().toLocaleDateString('fr-FR')}. Zoom ${data.zoomLevels[0]} à ${data.zoomLevels[data.zoomLevels.length - 1]}. Trace : ${data.distanceKm.toFixed(1)} km.</div>
+  <h3>Points du corridor (${data.points.length})</h3>
+  <div class="legend">
+    <label><input type="checkbox" class="cat-filter" value="shop" checked /><span class="dot" style="background:#2E7D32"></span>Magasins vélo</label>
+    <label><input type="checkbox" class="cat-filter" value="repair" checked /><span class="dot" style="background:#F57F17"></span>Stations de réparation</label>
+    <label><input type="checkbox" class="cat-filter" value="compressed_air" checked /><span class="dot" style="background:#00897B"></span>Gonflage</label>
+    <label><input type="checkbox" class="cat-filter" value="wash" checked /><span class="dot" style="background:#5C6BC0"></span>Lavage</label>
+    <label><input type="checkbox" class="cat-filter" value="tube_vending" checked /><span class="dot" style="background:#6D4C41"></span>Chambres à air</label>
+    <label><input type="checkbox" class="cat-filter" value="eau" checked /><span class="dot" style="background:#1E88E5"></span>Points d'eau</label>
+    <label><input type="checkbox" class="cat-filter" value="hebergement" checked /><span class="dot" style="background:#8E24AA"></span>Hébergements</label>
+    <label><input type="checkbox" class="cat-filter" value="restaurant" checked /><span class="dot" style="background:#D62828"></span>Restaurants</label>
+  </div>
+  <div id="pt-list"></div>
+</div>
+<script>${data.leafletJs}<\/script>
+<script>
+  const TILE_DATA = ${tileDataJson};
+  const TRACK_COORDS = ${trackCoordsJson};
+  const POINTS = ${pointsJson};
+  const ZOOM_LEVELS = ${zoomLevelsJson};
+  const BLANK_TILE = '${BLANK_TILE_DATA_URI}';
+  const CATEGORY_COLORS = { shop:'#2E7D32', repair:'#F57F17', compressed_air:'#00897B', wash:'#5C6BC0', tube_vending:'#6D4C41', eau:'#1E88E5', hebergement:'#8E24AA', restaurant:'#D62828' };
+
+  const map = L.map('map', { minZoom: ZOOM_LEVELS[0], maxZoom: ZOOM_LEVELS[ZOOM_LEVELS.length - 1] })
+    .setView([${centerLat}, ${centerLon}], ZOOM_LEVELS[1] || ZOOM_LEVELS[0]);
+
+  const OfflineTiles = L.GridLayer.extend({
+    createTile: function (coords, done) {
+      const tile = document.createElement('img');
+      const key = coords.z + '/' + coords.x + '/' + coords.y;
+      tile.src = TILE_DATA[key] || BLANK_TILE;
+      tile.onload = function () { done(null, tile); };
+      tile.onerror = function () { done(null, tile); };
+      return tile;
+    }
+  });
+  new OfflineTiles({ minZoom: ZOOM_LEVELS[0], maxZoom: ZOOM_LEVELS[ZOOM_LEVELS.length - 1] }).addTo(map);
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str || '';
+    return div.innerHTML;
+  }
+
+  if (TRACK_COORDS.length > 1) {
+    const latlngs = TRACK_COORDS.map(function (c) { return [c[1], c[0]]; });
+    const trackLine = L.polyline(latlngs, { color: '#7CB518', weight: 4, opacity: 0.9 }).addTo(map);
+    map.fitBounds(trackLine.getBounds());
+  }
+
+  const markersByCategory = {};
+  const listEl = document.getElementById('pt-list');
+  let listHtml = '';
+
+  POINTS.forEach(function (p, i) {
+    const color = CATEGORY_COLORS[p.category] || '#777';
+    const marker = L.circleMarker([p.lat, p.lon], { radius: 8, fillColor: color, color: '#fff', weight: 2, fillOpacity: 0.95 })
+      .bindPopup('<strong>' + escapeHtml(p.name) + '</strong><br>' + escapeHtml(p.detail))
+      .addTo(map);
+    (markersByCategory[p.category] = markersByCategory[p.category] || []).push(marker);
+
+    listHtml += '<div class="pt-item"><div class="pt-name">' + escapeHtml(p.name) + '</div>' +
+      '<div class="pt-detail">' + escapeHtml(p.detail) + '</div></div>';
+  });
+  listEl.innerHTML = listHtml;
+
+  document.querySelectorAll('.cat-filter').forEach(function (cb) {
+    cb.addEventListener('change', function () {
+      const markers = markersByCategory[cb.value] || [];
+      markers.forEach(function (m) {
+        if (cb.checked) m.addTo(map); else map.removeLayer(m);
+      });
+    });
+  });
+
+  const sidebarToggleBtn = document.getElementById('sidebar-toggle');
+  sidebarToggleBtn.addEventListener('click', function () {
+    const collapsed = document.body.classList.toggle('sidebar-collapsed');
+    sidebarToggleBtn.textContent = collapsed ? 'Voir la liste' : 'Masquer la liste';
+    setTimeout(function () { map.invalidateSize(); }, 200);
+  });
+
+  const locateBtn = document.getElementById('locate-btn');
+  let geoWatchId = null, userPositionMarker = null, userAccuracyCircle = null, hasCenteredOnFirstFix = false;
+  function stopLocateTracking() {
+    if (geoWatchId != null) { navigator.geolocation.clearWatch(geoWatchId); geoWatchId = null; }
+    if (userPositionMarker) { map.removeLayer(userPositionMarker); userPositionMarker = null; }
+    if (userAccuracyCircle) { map.removeLayer(userAccuracyCircle); userAccuracyCircle = null; }
+    hasCenteredOnFirstFix = false;
+    locateBtn.classList.remove('active');
+  }
+  function startLocateTracking() {
+    if (!navigator.geolocation) { alert('Géolocalisation indisponible.'); return; }
+    locateBtn.classList.add('active');
+    geoWatchId = navigator.geolocation.watchPosition(function (position) {
+      const latlng = [position.coords.latitude, position.coords.longitude];
+      if (!userPositionMarker) {
+        userPositionMarker = L.circleMarker(latlng, { radius: 8, fillColor: '#1E88E5', color: '#fff', weight: 2, fillOpacity: 1 }).addTo(map);
+        userAccuracyCircle = L.circle(latlng, { radius: position.coords.accuracy, color: '#1E88E5', weight: 1, fillOpacity: 0.1 }).addTo(map);
+      } else {
+        userPositionMarker.setLatLng(latlng);
+        userAccuracyCircle.setLatLng(latlng);
+        userAccuracyCircle.setRadius(position.coords.accuracy);
+      }
+      if (!hasCenteredOnFirstFix) { map.setView(latlng, Math.max(map.getZoom(), 15)); hasCenteredOnFirstFix = true; }
+    }, function () { alert('Impossible d\\'obtenir la position.'); stopLocateTracking(); }, { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 });
+  }
+  locateBtn.addEventListener('click', function () { if (geoWatchId != null) stopLocateTracking(); else startLocateTracking(); });
+<\/script>
+</body>
+</html>`;
+    }
+  </script>
+
+</body>
+</html>
