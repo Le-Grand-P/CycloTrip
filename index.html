@@ -572,7 +572,7 @@
     <button id="btn-otm">OpenTopo</button>
   </div>
 
-  <div id="app-version">build 2026-08-27-22 — filtres + overview sur la recherche corridor</div>
+  <div id="app-version">build 2026-08-27-23 — ⚠️ clé DATAtourisme en dur (proto uniquement, à retirer avant prod)</div>
 
   <div id="elevation-panel">
     <div id="elevation-panel-header">
@@ -1827,6 +1827,10 @@
     const DATATOURISME_BASE = 'https://api.datatourisme.fr/v1/placeOfInterest';
     const MIN_ZOOM_HEBERGEMENTS = 12;
     const DATATOURISME_KEY_STORAGE = 'cyclotrip_datatourisme_key';
+    // ⚠️ Clé de test en dur pour cette phase de proto — RETIRER avant tout
+    // déploiement public/production (visible en clair par quiconque ouvre
+    // le code source de la page).
+    const DEFAULT_DATATOURISME_KEY = '1d6280c7-7b69-47b4-9d68-8ed94af0a88f';
 
     const datatourismeKeyInput = document.getElementById('datatourisme-key');
     const apiKeySavedBadge = document.getElementById('api-key-saved-badge');
@@ -1837,14 +1841,18 @@
     const restaurantsLayer = L.layerGroup().addTo(map);
     const poiCache = new Map(); // uuid -> objet POI complet, pour l'assignation manuelle depuis une popup
 
-    // Charge la clé déjà enregistrée, s'il y en a une
+    // Charge la clé déjà enregistrée, sinon préremplit avec la clé de test
     try {
       const savedKey = localStorage.getItem(DATATOURISME_KEY_STORAGE);
       if (savedKey) {
         datatourismeKeyInput.value = savedKey;
         apiKeySavedBadge.style.display = 'block';
+      } else {
+        datatourismeKeyInput.value = DEFAULT_DATATOURISME_KEY;
       }
-    } catch (err) { /* stockage indisponible, tant pis */ }
+    } catch (err) {
+      datatourismeKeyInput.value = DEFAULT_DATATOURISME_KEY; // stockage indisponible, on retombe sur la clé de test
+    }
 
     datatourismeKeyInput.addEventListener('change', function () {
       const key = datatourismeKeyInput.value.trim();
@@ -2016,7 +2024,7 @@
       const wantRestaurants = toggleRestaurants.checked;
       if (!wantHebergements && !wantRestaurants) return;
 
-      const apiKey = (localStorage.getItem(DATATOURISME_KEY_STORAGE) || datatourismeKeyInput.value || '').trim();
+      const apiKey = (localStorage.getItem(DATATOURISME_KEY_STORAGE) || datatourismeKeyInput.value || DEFAULT_DATATOURISME_KEY).trim();
       if (!apiKey) {
         hebergementsStatusEl.textContent = 'Renseigne une clé API DATAtourisme ci-dessus pour activer ces couches.';
         return;
@@ -2175,7 +2183,7 @@
     async function fetchLodgingCandidatesAlongTrack() {
       if (lodgingCandidates) return lodgingCandidates;
 
-      const apiKey = (localStorage.getItem(DATATOURISME_KEY_STORAGE) || datatourismeKeyInput.value || '').trim();
+      const apiKey = (localStorage.getItem(DATATOURISME_KEY_STORAGE) || datatourismeKeyInput.value || DEFAULT_DATATOURISME_KEY).trim();
       if (!apiKey) throw new Error('Renseigne une clé API DATAtourisme dans l\'onglet Points d\'intérêt.');
 
       const bufferPolygon = turf.buffer(currentTrackLine, DAYPLAN_SEARCH_BUFFER_KM, { units: 'kilometers' });
@@ -3026,7 +3034,7 @@
         console.warn("[offline] points d'eau indisponibles pour le corridor —", err.message);
       }
 
-      const apiKey = (localStorage.getItem(DATATOURISME_KEY_STORAGE) || datatourismeKeyInput.value || '').trim();
+      const apiKey = (localStorage.getItem(DATATOURISME_KEY_STORAGE) || datatourismeKeyInput.value || DEFAULT_DATATOURISME_KEY).trim();
       if (apiKey) {
         onProgress('Recherche hébergements et restaurants…');
         try {
