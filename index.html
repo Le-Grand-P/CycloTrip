@@ -570,7 +570,7 @@
     <button id="btn-otm">OpenTopo</button>
   </div>
 
-  <div id="app-version">build 2026-08-27-20 — onglet Navigation (plein écran, POI avant/arrière)</div>
+  <div id="app-version">build 2026-08-27-21 — fix : erreur bloquante au chargement (piège TDZ)</div>
 
   <div id="elevation-panel">
     <div id="elevation-panel-header">
@@ -831,6 +831,11 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/2.1.2/gpx.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6.5.0/turf.min.js"></script>
   <script>
+    // Déclarée tout en haut du script (avant tout appel) pour éviter un
+    // piège de zone morte temporelle : stopNavigationWatch() est appelée
+    // dès l'ouverture initiale de l'onglet "Trace" au chargement de la page.
+    let navWatchInterval = null;
+
     // =========================================================
     // Carte de base
     // =========================================================
@@ -3243,7 +3248,8 @@
     // proches "en avant / en arrière" par rapport à la position sur la trace.
     // =========================================================
     let navCorridorPoints = null; // cache : points du corridor autour de toute la trace
-    let navWatchInterval = null;
+    // navWatchInterval déplacée en haut du fichier (piège de zone morte
+    // temporelle : lue dès openSheet('trace') au tout premier chargement).
     const NAV_REFRESH_MS = 5000;
     const NAV_CORRIDOR_BUFFER_KM = 5;
 
