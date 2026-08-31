@@ -572,7 +572,7 @@
     <button id="btn-otm">OpenTopo</button>
   </div>
 
-  <div id="app-version">build 2026-08-27-24 — trace magenta + boulangeries</div>
+  <div id="app-version">build 2026-08-27-25 — filtres POI unifiés en un seul endroit</div>
 
   <div id="elevation-panel">
     <div id="elevation-panel-header">
@@ -664,68 +664,46 @@
     <!-- ===================== Panneau : Points d'intérêt (regroupé) ===================== -->
     <div class="sheet-panel" id="panel-poi">
       <h3 class="sheet-title">Points d'intérêt</h3>
-      <p class="sheet-subtitle">Tout ce qui compte le long de la route — zoome sur la carte pour charger les points.</p>
+      <p class="sheet-subtitle">Coche les types à afficher — zoome sur la carte pour charger les points.</p>
 
-      <div class="poi-section">
-        <div class="master-toggle-row">
-          <span>🔧 Ateliers vélo</span>
-          <label class="switch">
-            <input type="checkbox" id="toggle-ateliers" checked />
-            <span class="switch-track"></span>
-          </label>
-        </div>
-        <div class="chip-row" id="ateliers-filters">
-          <label><input type="checkbox" class="ateliers-filter" value="shop" checked /><span class="chip-dot" style="background:#2E7D32"></span>Magasins vélo</label>
-          <label><input type="checkbox" class="ateliers-filter" value="repair" checked /><span class="chip-dot" style="background:#F57F17"></span>Stations de réparation</label>
-          <label><input type="checkbox" class="ateliers-filter" value="compressed_air" checked /><span class="chip-dot" style="background:#00897B"></span>Gonflage</label>
-          <label><input type="checkbox" class="ateliers-filter" value="wash" checked /><span class="chip-dot" style="background:#5C6BC0"></span>Lavage</label>
-          <label><input type="checkbox" class="ateliers-filter" value="tube_vending" checked /><span class="chip-dot" style="background:#6D4C41"></span>Distributeur de chambres à air</label>
-          <label><input type="checkbox" class="ateliers-filter" value="bakery" checked /><span class="chip-dot" style="background:#C2185B"></span>Boulangerie</label>
-        </div>
-        <div id="ateliers-status" class="status-text">Zoome pour charger les points (niveau 13+)</div>
-        <button id="around-me-btn" class="btn-block btn-outline" style="margin-top:10px;">
+      <span class="panel-eyebrow" style="display:block;">🚴 Vélo</span>
+      <div class="chip-row" id="ateliers-filters">
+        <label><input type="checkbox" class="ateliers-filter" value="shop" checked /><span class="chip-dot" style="background:#2E7D32"></span>Magasins vélo</label>
+        <label><input type="checkbox" class="ateliers-filter" value="repair" checked /><span class="chip-dot" style="background:#F57F17"></span>Stations de réparation</label>
+        <label><input type="checkbox" class="ateliers-filter" value="compressed_air" checked /><span class="chip-dot" style="background:#00897B"></span>Gonflage</label>
+        <label><input type="checkbox" class="ateliers-filter" value="wash" checked /><span class="chip-dot" style="background:#5C6BC0"></span>Lavage</label>
+        <label><input type="checkbox" class="ateliers-filter" value="tube_vending" checked /><span class="chip-dot" style="background:#6D4C41"></span>Distributeur de chambres à air</label>
+        <label><input type="checkbox" class="ateliers-filter" value="bakery" checked /><span class="chip-dot" style="background:#C2185B"></span>Boulangerie</label>
+      </div>
+      <div id="ateliers-status" class="status-text">Zoome pour charger les points (niveau 13+)</div>
+
+      <span class="panel-eyebrow" style="display:block; margin-top:16px;">💧 Eau</span>
+      <div class="chip-row">
+        <label><input type="checkbox" id="toggle-eau" checked /><span class="chip-dot" style="background:#1E88E5"></span>Points d'eau</label>
+      </div>
+      <div id="eau-status" class="status-text">Zoome pour charger les points (niveau 13+)</div>
+
+      <span class="panel-eyebrow" style="display:block; margin-top:16px;">🏨 Hébergement &amp; restauration</span>
+      <div class="chip-row">
+        <label><input type="checkbox" id="toggle-hebergements" checked /><span class="chip-dot" style="background:#8E24AA"></span>Hébergements</label>
+        <label><input type="checkbox" id="toggle-restaurants" checked /><span class="chip-dot" style="background:#D62828"></span>Restaurants</label>
+      </div>
+      <label class="field-label" for="datatourisme-key">Clé API DATAtourisme</label>
+      <input type="text" id="datatourisme-key" class="text-input" placeholder="Colle ta clé ici" />
+      <div class="api-key-note">
+        Gratuite sur simple inscription (nom, email) —
+        <a href="https://www.datatourisme.fr/utiliser-les-donnees" target="_blank" rel="noopener">demander une clé →</a>
+      </div>
+      <div class="api-key-saved-badge" id="api-key-saved-badge">✓ Clé enregistrée sur cet appareil</div>
+      <div id="hebergements-status" class="status-text">Zoome pour charger les points (niveau 12+)</div>
+
+      <div class="poi-section poi-section-last">
+        <button id="around-me-btn" class="btn-block btn-outline">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M12 2v3M12 19v3M2 12h3M19 12h3"></path></svg>
           Shops vélo ou bornes de réparation autour de moi
         </button>
         <div id="around-me-status" class="status-text"></div>
         <div id="around-me-results"></div>
-      </div>
-
-      <div class="poi-section">
-        <div class="master-toggle-row">
-          <span>💧 Points d'eau</span>
-          <label class="switch">
-            <input type="checkbox" id="toggle-eau" checked />
-            <span class="switch-track"></span>
-          </label>
-        </div>
-        <div id="eau-status" class="status-text">Zoome pour charger les points (niveau 13+)</div>
-      </div>
-
-      <div class="poi-section poi-section-last">
-        <label class="field-label" for="datatourisme-key" style="margin-top:0;">Clé API DATAtourisme</label>
-        <input type="text" id="datatourisme-key" class="text-input" placeholder="Colle ta clé ici" />
-        <div class="api-key-note">
-          Gratuite sur simple inscription (nom, email) —
-          <a href="https://www.datatourisme.fr/utiliser-les-donnees" target="_blank" rel="noopener">demander une clé →</a>
-        </div>
-        <div class="api-key-saved-badge" id="api-key-saved-badge">✓ Clé enregistrée sur cet appareil</div>
-
-        <div class="master-toggle-row" style="margin-top:14px;">
-          <span>🏨 Hébergements</span>
-          <label class="switch">
-            <input type="checkbox" id="toggle-hebergements" checked />
-            <span class="switch-track"></span>
-          </label>
-        </div>
-        <div class="master-toggle-row">
-          <span>🍽️ Restaurants</span>
-          <label class="switch">
-            <input type="checkbox" id="toggle-restaurants" checked />
-            <span class="switch-track"></span>
-          </label>
-        </div>
-        <div id="hebergements-status" class="status-text">Zoome pour charger les points (niveau 12+)</div>
       </div>
     </div>
 
@@ -1333,7 +1311,6 @@
     const POI_TILE_EPS = 1e-9;
     const POI_TILES_BASE = 'data/tiles';
 
-    const toggleAteliers = document.getElementById('toggle-ateliers');
     const ateliersFilterEls = Array.from(document.querySelectorAll('.ateliers-filter'));
     const ateliersStatusEl = document.getElementById('ateliers-status');
     const ateliersLayer = L.layerGroup().addTo(map);
@@ -1519,14 +1496,10 @@
       return html;
     }
 
-    // Une seule requête Overpass pour ateliers + eau — avant, deux appels
-    // séparés partaient à chaque déplacement de carte, doublant inutilement
-    // le volume envoyé à une infrastructure déjà en limitation de débit.
+    // Visibilité pilotée uniquement par les puces de catégorie — plus de
+    // switch maître séparé, simplifié à la demande (une seule façon de
+    // choisir quoi afficher, pas deux superposées).
     async function refreshAteliersLayer() {
-      if (!toggleAteliers.checked) {
-        if (map.hasLayer(ateliersLayer)) map.removeLayer(ateliersLayer);
-        return;
-      }
       if (!map.hasLayer(ateliersLayer)) map.addLayer(ateliersLayer);
 
       if (map.getZoom() < MIN_ZOOM_POI) {
@@ -1535,7 +1508,7 @@
       }
 
       const activeFilters = new Set(ateliersFilterEls.filter(cb => cb.checked).map(cb => cb.value));
-      if (activeFilters.size === 0) { ateliersStatusEl.textContent = 'Sélectionne au moins un type de point.'; return; }
+      if (activeFilters.size === 0) { ateliersLayer.clearLayers(); ateliersStatusEl.textContent = 'Sélectionne au moins un type de point.'; return; }
 
       // Léger surplus autour de la vue actuelle pour que de petits
       // déplacements de carte tombent souvent dans des tuiles déjà
@@ -1649,7 +1622,6 @@
       }, 500);
     }
     map.on('moveend', schedulePoiRefresh);
-    toggleAteliers.addEventListener('change', refreshAteliersLayer);
     ateliersFilterEls.forEach(cb => cb.addEventListener('change', refreshAteliersLayer));
     toggleEau.addEventListener('change', refreshEauLayer);
 
