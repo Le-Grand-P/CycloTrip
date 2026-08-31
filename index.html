@@ -471,6 +471,40 @@
     .around-me-item-type { font-size: 11px; color: var(--ink-faint); }
     .around-me-item-dist { font-size: 11.5px; font-weight: 700; color: var(--brand-dark); white-space: nowrap; }
 
+    #navigation-view {
+      position: absolute;
+      inset: 0;
+      z-index: 1050;
+      background: var(--bg-app);
+      overflow-y: auto;
+      padding-bottom: calc(var(--nav-height) + 24px);
+    }
+    #nav-stats-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--border);
+      margin-top: 14px;
+    }
+    .nav-stat { background: var(--surface); padding: 16px; text-align: center; }
+    .nav-stat-value { display: block; font-size: 22px; font-weight: 800; color: var(--brand-dark); }
+    .nav-stat-label { display: block; font-size: 11px; color: var(--ink-soft); margin-top: 2px; }
+    .nav-section { padding: 16px; border-top: 1px solid var(--border); }
+    .nav-section-title { font-size: 13px; font-weight: 800; margin-bottom: 10px; }
+    .nav-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .nav-col-label { font-size: 10.5px; font-weight: 700; color: var(--ink-faint); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 6px; }
+    .nav-poi-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 8px 10px;
+      margin-bottom: 6px;
+      cursor: pointer;
+    }
+    .nav-poi-name { font-size: 12px; font-weight: 700; color: var(--ink); }
+    .nav-poi-meta { font-size: 11px; color: var(--ink-soft); margin-top: 2px; }
+    .nav-poi-empty { font-size: 11.5px; color: var(--ink-faint); font-style: italic; }
+
     .weather-day-title {
       font-weight: 800;
       font-size: 12.5px;
@@ -536,7 +570,7 @@
     <button id="btn-otm">OpenTopo</button>
   </div>
 
-  <div id="app-version">build 2026-08-27-18 — relecture complète : correctifs et optimisations</div>
+  <div id="app-version">build 2026-08-27-20 — onglet Navigation (plein écran, POI avant/arrière)</div>
 
   <div id="elevation-panel">
     <div id="elevation-panel-header">
@@ -591,6 +625,21 @@
           <polyline id="elevation-mini-line" points="" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" />
         </svg>
         <div class="elevation-mini-hint">Profil de dénivelé — toucher pour agrandir</div>
+      </div>
+
+      <div id="track-corridor-card" style="display:none;">
+        <span class="panel-eyebrow" style="margin-top:14px; display:block;">Points d'intérêt sur ma trace</span>
+        <div class="config-row">
+          <label for="track-corridor-buffer">Largeur du corridor</label>
+          <input type="range" id="track-corridor-buffer" min="1" max="5" step="1" value="2" />
+        </div>
+        <div id="track-corridor-buffer-label" class="status-text" style="margin-top:-8px;">±2 km (4 km de large)</div>
+        <button id="track-corridor-search-btn" class="btn-block btn-accent" style="margin-top:8px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          Chercher le long de la trace
+        </button>
+        <div id="track-corridor-status" class="status-text"></div>
+        <div id="track-corridor-results"></div>
       </div>
 
       <div id="offline-export-card" style="display:none;">
@@ -740,7 +789,43 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a4.5 4.5 0 1 0-1.44-8.765 5 5 0 1 0-9.516 3.049A4 4 0 1 0 8 19h9.5z"></path></svg>
       Météo
     </button>
+    <button class="nav-item" data-panel="navigation" id="nav-tab-navigation" style="display:none;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"></polygon></svg>
+      Navigation
+    </button>
   </nav>
+
+  <div id="navigation-view" style="display:none;">
+    <div id="nav-stats-row">
+      <div class="nav-stat"><span class="nav-stat-value" id="nav-km-done">–</span><span class="nav-stat-label">km parcourus</span></div>
+      <div class="nav-stat"><span class="nav-stat-value" id="nav-km-left">–</span><span class="nav-stat-label">km restants</span></div>
+      <div class="nav-stat"><span class="nav-stat-value" id="nav-dplus-done">–</span><span class="nav-stat-label">D+ parcouru</span></div>
+      <div class="nav-stat"><span class="nav-stat-value" id="nav-dplus-left">–</span><span class="nav-stat-label">D+ restant</span></div>
+    </div>
+    <div id="nav-gps-status" class="status-text" style="padding:0 16px;"></div>
+
+    <div class="nav-section">
+      <div class="nav-section-title">💧 Points d'eau</div>
+      <div class="nav-columns">
+        <div><div class="nav-col-label">En avant</div><div id="nav-eau-ahead"></div></div>
+        <div><div class="nav-col-label">En arrière</div><div id="nav-eau-behind"></div></div>
+      </div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-title">🔧 Magasin vélo</div>
+      <div class="nav-columns">
+        <div><div class="nav-col-label">En avant</div><div id="nav-shop-ahead"></div></div>
+        <div><div class="nav-col-label">En arrière</div><div id="nav-shop-behind"></div></div>
+      </div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-title">🛠️ Station de réparation</div>
+      <div class="nav-columns">
+        <div><div class="nav-col-label">En avant</div><div id="nav-repair-ahead"></div></div>
+        <div><div class="nav-col-label">En arrière</div><div id="nav-repair-behind"></div></div>
+      </div>
+    </div>
+  </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/2.1.2/gpx.min.js"></script>
@@ -836,10 +921,27 @@
     const bottomSheet = document.getElementById('bottom-sheet');
     const navItems = Array.from(document.querySelectorAll('.nav-item'));
     const sheetPanels = Array.from(document.querySelectorAll('.sheet-panel'));
+    const navigationView = document.getElementById('navigation-view');
     let activePanel = 'trace';
     let sheetOpen = false;
 
     function openSheet(panelName) {
+      if (panelName === 'navigation') {
+        navigationView.style.display = 'block';
+        map.getContainer().style.visibility = 'hidden';
+        navItems.forEach(n => n.classList.toggle('active', n.dataset.panel === 'navigation'));
+        activePanel = 'navigation';
+        sheetOpen = false;
+        bottomSheet.classList.remove('open');
+        sheetOverlay.classList.remove('open');
+        refreshNavigationView();
+        startNavigationWatch();
+        return;
+      }
+      stopNavigationWatch();
+      navigationView.style.display = 'none';
+      map.getContainer().style.visibility = 'visible';
+
       sheetPanels.forEach(p => p.classList.toggle('active', p.id === `panel-${panelName}`));
       navItems.forEach(n => n.classList.toggle('active', n.dataset.panel === panelName));
       activePanel = panelName;
@@ -857,6 +959,7 @@
     navItems.forEach(function (btn) {
       btn.addEventListener('click', function () {
         const panelName = btn.dataset.panel;
+        if (panelName === 'navigation') { openSheet('navigation'); return; }
         if (sheetOpen && activePanel === panelName) {
           closeSheet();
         } else {
@@ -1091,6 +1194,12 @@
 
         offlineExportCard.style.display = 'block';
         offlineDownloadStatusEl.textContent = '';
+        trackCorridorCard.style.display = 'block';
+        trackCorridorResultsEl.innerHTML = '';
+        trackCorridorStatusEl.textContent = '';
+        trackCorridorLayer.clearLayers();
+        navTabBtn.style.display = 'flex';
+        navCorridorPoints = null;
 
         // Une nouvelle trace invalide tout plan ou prévision basé sur l'ancienne.
         resetDayplanState();
@@ -1117,6 +1226,13 @@
       resetElevationState();
       offlineExportCard.style.display = 'none';
       offlineDownloadStatusEl.textContent = '';
+      trackCorridorCard.style.display = 'none';
+      trackCorridorResultsEl.innerHTML = '';
+      trackCorridorStatusEl.textContent = '';
+      trackCorridorLayer.clearLayers();
+      navTabBtn.style.display = 'none';
+      navCorridorPoints = null;
+      if (activePanel === 'navigation') openSheet('trace');
       resetDayplanState();
       weatherResultsEl.innerHTML = '';
       weatherStatusEl.textContent = '';
@@ -2682,6 +2798,75 @@
     const TILE_CONCURRENCY_LIMIT = 6;
     const BLANK_TILE_DATA_URI = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=';
 
+    // Points d'intérêt le long de la trace (corridor) — réutilise
+    // fetchCorridorPoints (déclaré plus bas, hoisté) qui alimente déjà
+    // l'export hors-ligne.
+    const trackCorridorCard = document.getElementById('track-corridor-card');
+    const trackCorridorBufferInput = document.getElementById('track-corridor-buffer');
+    const trackCorridorBufferLabel = document.getElementById('track-corridor-buffer-label');
+    const trackCorridorSearchBtn = document.getElementById('track-corridor-search-btn');
+    const trackCorridorStatusEl = document.getElementById('track-corridor-status');
+    const trackCorridorResultsEl = document.getElementById('track-corridor-results');
+    const trackCorridorLayer = L.layerGroup().addTo(map);
+    const TRACK_CORRIDOR_COLORS = Object.assign(
+      { eau: '#1E88E5', hebergement: '#8E24AA', restaurant: '#D62828' },
+      Object.fromEntries(Object.entries(POI_CATEGORY_STYLE).map(([k, v]) => [k, v.color]))
+    );
+
+    function updateTrackCorridorBufferLabel() {
+      const km = trackCorridorBufferInput.value;
+      trackCorridorBufferLabel.textContent = `±${km} km (${km * 2} km de large)`;
+    }
+    trackCorridorBufferInput.addEventListener('input', updateTrackCorridorBufferLabel);
+    updateTrackCorridorBufferLabel();
+
+    trackCorridorSearchBtn.addEventListener('click', async function () {
+      if (!currentTrackLine) return;
+      trackCorridorSearchBtn.disabled = true;
+      trackCorridorLayer.clearLayers();
+      trackCorridorResultsEl.innerHTML = '';
+
+      try {
+        const bufferKm = parseInt(trackCorridorBufferInput.value, 10);
+        const bufferPolygon = turf.buffer(currentTrackLine, bufferKm, { units: 'kilometers' });
+        const bbox = turf.bbox(bufferPolygon);
+
+        const points = await fetchCorridorPoints(bbox, function (msg) { trackCorridorStatusEl.textContent = msg; });
+
+        points.forEach(function (p) {
+          const snapped = turf.nearestPointOnLine(currentTrackLine, turf.point([p.lon, p.lat]), { units: 'kilometers' });
+          p.alongKm = snapped.properties.location;
+        });
+        points.sort((a, b) => a.alongKm - b.alongKm);
+
+        let html = '';
+        points.forEach(function (p, i) {
+          const color = TRACK_CORRIDOR_COLORS[p.category] || '#777';
+          L.circleMarker([p.lat, p.lon], { radius: 8, fillColor: color, color: '#fff', weight: 2, fillOpacity: 0.95 })
+            .bindPopup(`<div class="poi-popup"><h4>${escapeHtml(p.name)}</h4><p>${escapeHtml(p.detail)}</p></div>`)
+            .addTo(trackCorridorLayer);
+          html += `<div class="around-me-item" data-index="${i}">` +
+            `<div><div class="around-me-item-name">${escapeHtml(p.name)}</div>` +
+            `<div class="around-me-item-type">${escapeHtml(p.detail)}</div></div>` +
+            `<div class="around-me-item-dist">km ${p.alongKm.toFixed(1)}</div></div>`;
+        });
+        trackCorridorResultsEl.innerHTML = html;
+        trackCorridorResultsEl.querySelectorAll('.around-me-item').forEach(function (item) {
+          item.addEventListener('click', function () {
+            const p = points[Number(item.dataset.index)];
+            map.flyTo([p.lat, p.lon], Math.max(map.getZoom(), 16), { duration: 0.6 });
+          });
+        });
+
+        trackCorridorStatusEl.textContent = `${points.length} point(s) trouvé(s) le long de la trace.`;
+      } catch (err) {
+        console.error('[track-corridor] erreur', err);
+        trackCorridorStatusEl.textContent = `Erreur : ${err.message}`;
+      } finally {
+        trackCorridorSearchBtn.disabled = false;
+      }
+    });
+
     const offlineExportCard = document.getElementById('offline-export-card');
     const offlineBufferInput = document.getElementById('offline-buffer');
     const offlineBufferLabel = document.getElementById('offline-buffer-label');
@@ -3053,6 +3238,122 @@
 </body>
 </html>`;
     }
+    // =========================================================
+    // Onglet Navigation — vue plein écran (pas de carte), stats + POI
+    // proches "en avant / en arrière" par rapport à la position sur la trace.
+    // =========================================================
+    let navCorridorPoints = null; // cache : points du corridor autour de toute la trace
+    let navWatchInterval = null;
+    const NAV_REFRESH_MS = 5000;
+    const NAV_CORRIDOR_BUFFER_KM = 5;
+
+    function elevationGainTraveling(fromKm, toKm) {
+      if (!elevationProfile || elevationProfile.length < 2) return 0;
+      const lo = Math.min(fromKm, toKm), hi = Math.max(fromKm, toKm);
+      const pts = elevationProfile.filter(p => p.distKm >= lo && p.distKm <= hi);
+      let gain = 0;
+      if (toKm >= fromKm) {
+        for (let i = 1; i < pts.length; i++) { const d = pts[i].ele - pts[i - 1].ele; if (d > 0) gain += d; }
+      } else {
+        for (let i = pts.length - 1; i > 0; i--) { const d = pts[i - 1].ele - pts[i].ele; if (d > 0) gain += d; }
+      }
+      return Math.round(gain);
+    }
+
+    async function ensureNavCorridorPoints() {
+      if (navCorridorPoints || !currentTrackLine) return navCorridorPoints;
+      const bufferPolygon = turf.buffer(currentTrackLine, NAV_CORRIDOR_BUFFER_KM, { units: 'kilometers' });
+      const bbox = turf.bbox(bufferPolygon);
+      const points = await fetchCorridorPoints(bbox, function (msg) { navGpsStatusEl.textContent = msg; });
+      points.forEach(function (p) {
+        const snapped = turf.nearestPointOnLine(currentTrackLine, turf.point([p.lon, p.lat]), { units: 'kilometers' });
+        p.alongKm = snapped.properties.location;
+      });
+      navCorridorPoints = points;
+      return points;
+    }
+
+    function navPoiItemHtml(p, currentKm) {
+      const dist = Math.abs(p.alongKm - currentKm).toFixed(1);
+      const dplus = elevationGainTraveling(currentKm, p.alongKm);
+      return `<div class="nav-poi-item" data-lat="${p.lat}" data-lon="${p.lon}" data-category="${p.category}">` +
+        `<div class="nav-poi-name">${escapeHtml(p.name)}</div>` +
+        `<div class="nav-poi-meta">${dist} km · ${dplus} m D+</div></div>`;
+    }
+
+    function renderNavPoiColumn(elId, items, currentKm) {
+      const el = document.getElementById(elId);
+      el.innerHTML = items.length
+        ? items.map(p => navPoiItemHtml(p, currentKm)).join('')
+        : '<div class="nav-poi-empty">Aucun</div>';
+      el.querySelectorAll('.nav-poi-item').forEach(function (item) {
+        item.addEventListener('click', function () {
+          const lat = Number(item.dataset.lat), lon = Number(item.dataset.lon);
+          openSheet('poi');
+          setTimeout(function () { map.flyTo([lat, lon], Math.max(map.getZoom(), 16), { duration: 0.6 }); }, 50);
+        });
+      });
+    }
+
+    async function refreshNavigationView() {
+      if (!currentTrackLine) return;
+      navGpsStatusEl.textContent = 'Localisation en cours…';
+
+      let pos;
+      try {
+        pos = await getCurrentPositionOnce();
+      } catch (err) {
+        navGpsStatusEl.textContent = `Erreur GPS : ${err.message}`;
+        return;
+      }
+
+      const snapped = turf.nearestPointOnLine(currentTrackLine, turf.point([pos.lon, pos.lat]), { units: 'kilometers' });
+      const currentKm = snapped.properties.location;
+      navGpsStatusEl.textContent = '';
+
+      document.getElementById('nav-km-done').textContent = currentKm.toFixed(1);
+      document.getElementById('nav-km-left').textContent = Math.max(0, currentTrackTotalKm - currentKm).toFixed(1);
+      document.getElementById('nav-dplus-done').textContent = elevationGainTraveling(0, currentKm) + ' m';
+      document.getElementById('nav-dplus-left').textContent = elevationGainTraveling(currentKm, currentTrackTotalKm) + ' m';
+
+      let points;
+      try {
+        points = await ensureNavCorridorPoints();
+      } catch (err) {
+        navGpsStatusEl.textContent = `Erreur : ${err.message}`;
+        return;
+      }
+
+      function nearest(category, count) {
+        const ahead = points.filter(p => p.category === category && p.alongKm > currentKm).sort((a, b) => a.alongKm - b.alongKm).slice(0, count);
+        const behind = points.filter(p => p.category === category && p.alongKm < currentKm).sort((a, b) => b.alongKm - a.alongKm).slice(0, count);
+        return { ahead, behind };
+      }
+
+      const eau = nearest('eau', 3);
+      renderNavPoiColumn('nav-eau-ahead', eau.ahead, currentKm);
+      renderNavPoiColumn('nav-eau-behind', eau.behind, currentKm);
+
+      const shop = nearest('shop', 1);
+      renderNavPoiColumn('nav-shop-ahead', shop.ahead, currentKm);
+      renderNavPoiColumn('nav-shop-behind', shop.behind, currentKm);
+
+      const repair = nearest('repair', 1);
+      renderNavPoiColumn('nav-repair-ahead', repair.ahead, currentKm);
+      renderNavPoiColumn('nav-repair-behind', repair.behind, currentKm);
+    }
+
+    function startNavigationWatch() {
+      if (geoWatchId == null) startLocateTracking();
+      if (navWatchInterval) return;
+      navWatchInterval = setInterval(refreshNavigationView, NAV_REFRESH_MS);
+    }
+    function stopNavigationWatch() {
+      if (navWatchInterval) { clearInterval(navWatchInterval); navWatchInterval = null; }
+    }
+
+    const navGpsStatusEl = document.getElementById('nav-gps-status');
+    const navTabBtn = document.getElementById('nav-tab-navigation');
   </script>
 
 </body>
