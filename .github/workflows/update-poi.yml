@@ -5,10 +5,10 @@ name: Mise à jour des POI vélo
 # lance-le manuellement via l'onglet "Actions" du dépôt (workflow_dispatch).
 on:
   workflow_dispatch: {}
-  # schedule:
-  #   - cron: '17 3 * * *'  # tous les jours à 03h17 UTC (heure creuse, décalée
-  #                          # de la minute pile pour éviter de tomber en même
-  #                          # temps que des milliers d'autres jobs cron)
+  schedule:
+     - cron: '17 3 * * *'  # tous les jours à 03h17 UTC (heure creuse, décalée
+                            # de la minute pile pour éviter de tomber en même
+                            # temps que des milliers d'autres jobs cron)
 
 permissions:
   contents: write
