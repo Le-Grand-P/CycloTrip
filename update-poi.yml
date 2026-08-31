@@ -1,0 +1,45 @@
+name: Mise à jour des POI vélo
+
+# Modèle de départ — ajuste le déclencheur selon tes besoins. Le cron ci-dessous
+# est désactivé par défaut (commenté) : décommente-le pour l'activer, ou
+# lance-le manuellement via l'onglet "Actions" du dépôt (workflow_dispatch).
+on:
+  workflow_dispatch: {}
+  # schedule:
+  #   - cron: '17 3 * * *'  # tous les jours à 03h17 UTC (heure creuse, décalée
+  #                          # de la minute pile pour éviter de tomber en même
+  #                          # temps que des milliers d'autres jobs cron)
+
+permissions:
+  contents: write
+
+jobs:
+  update-poi:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30 # la requête Overpass elle-même peut prendre plusieurs minutes sur toute la France
+
+    steps:
+      - name: Récupérer le dépôt
+        uses: actions/checkout@v4
+
+      - name: Configurer Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          # Aucune dépendance externe : le script n'utilise que la bibliothèque
+          # standard, pas besoin de requirements.txt ni d'étape pip install.
+
+      - name: Exécuter la mise à jour des POI
+        run: python3 scripts/update_poi.py
+
+      - name: Committer les données si elles ont changé
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/
+          if git diff --cached --quiet; then
+            echo "Aucun changement dans les données — rien à committer."
+          else
+            git commit -m "chore: mise à jour automatique des POI vélo ($(date -u +%Y-%m-%d))"
+            git push
+          fi
