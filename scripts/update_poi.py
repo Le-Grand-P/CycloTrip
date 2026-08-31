@@ -71,6 +71,7 @@ area["ISO3166-1"="FR"][admin_level=2]->.fr;
   node["amenity"="bicycle_repair_station"](area.fr);
   node["amenity"="compressed_air"](area.fr);
   node["amenity"="bicycle_wash"](area.fr);
+  node["shop"="bakery"](area.fr);
   node["amenity"="vending_machine"]["vending"="bicycle_tube"](area.fr);
 );
 out body;
@@ -157,6 +158,8 @@ def categorize(tags):
         return "wash"
     if tags.get("amenity") == "vending_machine" and tags.get("vending") == "bicycle_tube":
         return "tube_vending"
+    if tags.get("shop") == "bakery":
+        return "bakery"
     return None  # ne devrait pas arriver vu la requête, filtré par sécurité
 
 
