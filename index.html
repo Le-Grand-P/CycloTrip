@@ -572,7 +572,7 @@
     <button id="btn-otm">OpenTopo</button>
   </div>
 
-  <div id="app-version">build 2026-08-27-23 — ⚠️ clé DATAtourisme en dur (proto uniquement, à retirer avant prod)</div>
+  <div id="app-version">build 2026-08-27-24 — trace magenta + boulangeries</div>
 
   <div id="elevation-panel">
     <div id="elevation-panel-header">
@@ -680,6 +680,7 @@
           <label><input type="checkbox" class="ateliers-filter" value="compressed_air" checked /><span class="chip-dot" style="background:#00897B"></span>Gonflage</label>
           <label><input type="checkbox" class="ateliers-filter" value="wash" checked /><span class="chip-dot" style="background:#5C6BC0"></span>Lavage</label>
           <label><input type="checkbox" class="ateliers-filter" value="tube_vending" checked /><span class="chip-dot" style="background:#6D4C41"></span>Distributeur de chambres à air</label>
+          <label><input type="checkbox" class="ateliers-filter" value="bakery" checked /><span class="chip-dot" style="background:#C2185B"></span>Boulangerie</label>
         </div>
         <div id="ateliers-status" class="status-text">Zoome pour charger les points (niveau 13+)</div>
         <button id="around-me-btn" class="btn-block btn-outline" style="margin-top:10px;">
@@ -1183,7 +1184,7 @@
       currentGpxLayer = new L.GPX(currentGpxObjectUrl, {
         async: true,
         marker_options: { startIconUrl: null, endIconUrl: null, shadowUrl: null },
-        polyline_options: { color: '#7CB518', weight: 4, opacity: 0.9 }
+        polyline_options: { color: '#E91E63', weight: 4, opacity: 0.9 }
       });
 
       currentGpxLayer.on('loaded', function (e) {
@@ -1488,7 +1489,8 @@
       repair: { color: '#F57F17', label: 'Station de réparation' },
       compressed_air: { color: '#00897B', label: 'Gonflage' },
       wash: { color: '#5C6BC0', label: 'Lavage' },
-      tube_vending: { color: '#6D4C41', label: 'Distributeur de chambres à air' }
+      tube_vending: { color: '#6D4C41', label: 'Distributeur de chambres à air' },
+      bakery: { color: '#C2185B', label: 'Boulangerie' }
     };
 
     function popupForPoiFeature(props) {
@@ -3204,6 +3206,8 @@
     <label><input type="checkbox" class="cat-filter" value="compressed_air" checked /><span class="dot" style="background:#00897B"></span>Gonflage</label>
     <label><input type="checkbox" class="cat-filter" value="wash" checked /><span class="dot" style="background:#5C6BC0"></span>Lavage</label>
     <label><input type="checkbox" class="cat-filter" value="tube_vending" checked /><span class="dot" style="background:#6D4C41"></span>Chambres à air</label>
+    <label><input type="checkbox" class="cat-filter" value="bakery" checked /><span class="dot" style="background:#C2185B"></span>Boulangeries</label>
+    <label><input type="checkbox" class="cat-filter" value="bakery" checked /><span class="dot" style="background:#C2185B"></span>Boulangeries</label>
     <label><input type="checkbox" class="cat-filter" value="eau" checked /><span class="dot" style="background:#1E88E5"></span>Points d'eau</label>
     <label><input type="checkbox" class="cat-filter" value="hebergement" checked /><span class="dot" style="background:#8E24AA"></span>Hébergements</label>
     <label><input type="checkbox" class="cat-filter" value="restaurant" checked /><span class="dot" style="background:#D62828"></span>Restaurants</label>
@@ -3217,7 +3221,7 @@
   const POINTS = ${pointsJson};
   const ZOOM_LEVELS = ${zoomLevelsJson};
   const BLANK_TILE = '${BLANK_TILE_DATA_URI}';
-  const CATEGORY_COLORS = { shop:'#2E7D32', repair:'#F57F17', compressed_air:'#00897B', wash:'#5C6BC0', tube_vending:'#6D4C41', eau:'#1E88E5', hebergement:'#8E24AA', restaurant:'#D62828' };
+  const CATEGORY_COLORS = { shop:'#2E7D32', repair:'#F57F17', compressed_air:'#00897B', wash:'#5C6BC0', tube_vending:'#6D4C41', bakery:'#C2185B', eau:'#1E88E5', hebergement:'#8E24AA', restaurant:'#D62828' };
 
   const map = L.map('map', { minZoom: ZOOM_LEVELS[0], maxZoom: ZOOM_LEVELS[ZOOM_LEVELS.length - 1] })
     .setView([${centerLat}, ${centerLon}], ZOOM_LEVELS[1] || ZOOM_LEVELS[0]);
@@ -3242,7 +3246,7 @@
 
   if (TRACK_COORDS.length > 1) {
     const latlngs = TRACK_COORDS.map(function (c) { return [c[1], c[0]]; });
-    const trackLine = L.polyline(latlngs, { color: '#7CB518', weight: 4, opacity: 0.9 }).addTo(map);
+    const trackLine = L.polyline(latlngs, { color: '#E91E63', weight: 4, opacity: 0.9 }).addTo(map);
     map.fitBounds(trackLine.getBounds());
   }
 
