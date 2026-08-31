@@ -584,7 +584,7 @@
     <button id="btn-otm">OpenTopo</button>
   </div>
 
-  <div id="app-version">build 2026-08-27-30 — lieu météo : un par créneau de 2h, sans plafond</div>
+  <div id="app-version">build 2026-08-27-32 — granularité météo réglable (1-6h)</div>
 
   <div id="elevation-panel">
     <div id="elevation-panel-header">
@@ -761,6 +761,11 @@
         <label for="weather-speed">Vitesse</label>
         <input type="range" id="weather-speed" min="5" max="30" step="1" value="15" style="flex:1; margin:0 10px;" />
         <span id="weather-speed-label" style="font-weight:700; white-space:nowrap;">15 km/h</span>
+      </div>
+      <div class="config-row">
+        <label for="weather-granularity">Granularité</label>
+        <input type="range" id="weather-granularity" min="1" max="6" step="1" value="2" style="flex:1; margin:0 10px;" />
+        <span id="weather-granularity-label" style="font-weight:700; white-space:nowrap;">2h</span>
       </div>
       <p class="weather-hint">Les autres jours partent par défaut à 8h00.</p>
       <div id="weather-arrival-preview" class="status-text" style="font-weight:600;"></div>
@@ -2603,13 +2608,12 @@
 
     // =========================================================
     // Météo — Météo-France (AROME/ARPEGE) via Open-Meteo, sans clé API.
-    // Un point toutes les 2h de pédalage (vitesse forfaitaire 15 km/h),
-    // pause déjeuner d'1h insérée dès que l'horaire réel franchit midi.
-    // Prévision limitée à 4 jours par l'API elle-même.
+    // Un point tous les X heures de pédalage (X = granularité choisie),
+    // vitesse et granularité réglables via curseurs. Prévision limitée à
+    // 4 jours par l'API elle-même.
     // =========================================================
 
     const WEATHER_API_BASE = 'https://api.open-meteo.com/v1/meteofrance';
-    const CHECKPOINT_INTERVAL_H = 2;
     const MAX_FORECAST_DAYS = 4;
 
     const WMO_WEATHER = {
@@ -2632,6 +2636,8 @@
     const weatherStartDateInput = document.getElementById('weather-start-date');
     const weatherStartTimeInput = document.getElementById('weather-start-time');
     const weatherSpeedInput = document.getElementById('weather-speed');
+    const weatherGranularityInput = document.getElementById('weather-granularity');
+    const weatherGranularityLabel = document.getElementById('weather-granularity-label');
     const weatherSpeedLabel = document.getElementById('weather-speed-label');
     const weatherArrivalPreviewEl = document.getElementById('weather-arrival-preview');
     const weatherComputeBtn = document.getElementById('weather-compute-btn');
@@ -2666,6 +2672,9 @@
       weatherArrivalPreviewEl.textContent = `🏁 Arrivée prévue${dayLabel} : ${timeLabel} (${day1DistanceKm.toFixed(1)} km à ${speed} km/h)`;
     }
     weatherSpeedInput.addEventListener('input', updateWeatherArrivalPreview);
+    weatherGranularityInput.addEventListener('input', function () {
+      weatherGranularityLabel.textContent = `${weatherGranularityInput.value}h`;
+    });
     weatherStartDateInput.addEventListener('input', updateWeatherArrivalPreview);
     weatherStartTimeInput.addEventListener('input', updateWeatherArrivalPreview);
 
@@ -2686,6 +2695,7 @@
       const startDateStr = weatherStartDateInput.value;
       const startTimeStr = weatherStartTimeInput.value || '08:00';
       const speed = Number(weatherSpeedInput.value);
+      const granularityH = Number(weatherGranularityInput.value);
       const checkpoints = [];
 
       // Sans cette garde, un champ date vidé par l'utilisateur produit une
@@ -2709,7 +2719,7 @@
         departureDateTime.setHours(depH, depM, 0, 0);
 
         const hourMarks = [];
-        for (let h = 0; h < totalRideHours; h += CHECKPOINT_INTERVAL_H) hourMarks.push(h);
+        for (let h = 0; h < totalRideHours; h += granularityH) hourMarks.push(h);
         if (hourMarks.length === 0 || hourMarks[hourMarks.length - 1] < totalRideHours) hourMarks.push(totalRideHours);
 
         hourMarks.forEach(function (h) {
@@ -2836,14 +2846,15 @@
           `<div class="weather-cp-km">${kmLabel}</div></div>`;
       });
       weatherResultsEl.innerHTML = html;
+      weatherRenderGeneration++;
       resolveWeatherCheckpointPlaces(checkpointsWithWeather);
     }
 
     // --- Lieu de chaque prévision, via Nominatim (reverse geocoding) ---
     //
     // Un lieu par créneau météo — exactement les mêmes points que ceux déjà
-    // interrogés pour la prévision (un tous les CHECKPOINT_INTERVAL_H, soit
-    // 2h), pas plus. Cache par coordonnée arrondie (~1 km) pour éviter de
+    // interrogés pour la prévision (granularité choisie par l'utilisateur,
+    // 1 à 6h), pas plus. Cache par coordonnée arrondie (~1 km) pour éviter de
     // re-solliciter Nominatim quand deux créneaux tombent au même endroit,
     // et espacement de 1,1 s entre appels réels pour respecter la limite
     // de 1 requête/seconde de leur politique d'usage.
@@ -2870,10 +2881,18 @@
       return extractPlaceName(data);
     }
 
+    let weatherRenderGeneration = 0; // incrémenté à chaque rendu — un ancien calcul de lieux
+                                      // encore en cours (espacé de 1,1s/requête) ne doit pas
+                                      // écrire dans les lignes d'un calcul plus récent, au
+                                      // risque d'associer le mauvais lieu à un créneau.
+
     async function resolveWeatherCheckpointPlaces(checkpoints) {
+      const myGeneration = weatherRenderGeneration;
       let lookupsUsed = 0;
 
       for (let i = 0; i < checkpoints.length; i++) {
+        if (myGeneration !== weatherRenderGeneration) return; // un nouveau calcul a démarré entre-temps
+
         const c = checkpoints[i];
         if (!c.available) continue;
         const el = weatherResultsEl.querySelector(`.weather-cp-place[data-cp-index="${i}"]`);
@@ -2889,7 +2908,9 @@
         try {
           lookupsUsed++;
           if (lookupsUsed > 1) await new Promise(r => setTimeout(r, GEOCODE_DELAY_MS));
+          if (myGeneration !== weatherRenderGeneration) return; // vérifié aussi après l'attente
           const place = await reverseGeocode(c.lat, c.lon);
+          if (myGeneration !== weatherRenderGeneration) return;
           placeNameCache.set(key, place);
           el.textContent = place ? `📍 ${place}` : '';
         } catch (err) {
