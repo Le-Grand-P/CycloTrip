@@ -583,7 +583,7 @@
     <button id="btn-otm">OpenTopo</button>
   </div>
 
-  <div id="app-version">build 2026-08-27-27 — onglets Jours/Météo masqués sans trace + balayage pour fermer</div>
+  <div id="app-version">build 2026-08-27-28 — météo : curseur de vitesse + aperçu arrivée, pause déjeuner retirée</div>
 
   <div id="elevation-panel">
     <div id="elevation-panel-header">
@@ -756,8 +756,14 @@
         <label for="weather-start-time">Heure de départ (jour 1)</label>
         <input type="time" id="weather-start-time" value="08:00" />
       </div>
-      <p class="weather-hint">Les autres jours partent par défaut à 8h00. Vitesse estimée : 15 km/h, avec une pause déjeuner d'1h vers midi.</p>
-      <button id="weather-compute-btn" class="btn-block" style="background:var(--water); color:white;">
+      <div class="config-row">
+        <label for="weather-speed">Vitesse</label>
+        <input type="range" id="weather-speed" min="5" max="30" step="1" value="15" style="flex:1; margin:0 10px;" />
+        <span id="weather-speed-label" style="font-weight:700; white-space:nowrap;">15 km/h</span>
+      </div>
+      <p class="weather-hint">Les autres jours partent par défaut à 8h00.</p>
+      <div id="weather-arrival-preview" class="status-text" style="font-weight:600;"></div>
+      <button id="weather-compute-btn" class="btn-block" style="background:var(--water); color:white; margin-top:10px;">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a4.5 4.5 0 1 0-1.44-8.765 5 5 0 1 0-9.516 3.049A4 4 0 1 0 8 19h9.5z"></path></svg>
         Calculer les prévisions
       </button>
@@ -1223,6 +1229,7 @@
           currentTrackTotalKm = turf.length(currentTrackLine, { units: 'kilometers' });
           elevationProfile = buildElevationProfile(gpx, currentTrackLine);
           renderElevationMini();
+          updateWeatherArrivalPreview();
         }
 
         offlineExportCard.style.display = 'block';
@@ -2155,6 +2162,7 @@
     let lodgingCandidates = null; // cache des hébergements DATAtourisme le long de toute la trace
     let selectedDayIndex = null; // jour actuellement sélectionné (stats + surbrillance + assignation manuelle)
     const CLIMB_PENALTY_MIN_PER_100M = 4; // heuristique : ~4 min ajoutées par 100m de D+, à affiner à l'usage
+    const BIKE_SPEED_KMH = 15; // vitesse forfaitaire utilisée pour les stats de jour (Jours/Navigation) — indépendante du curseur météo
     let dayNightPoints = [];
     let dayNightIdealsKm = [];
     let dayBoundariesKm = [];
@@ -2600,10 +2608,7 @@
     // =========================================================
 
     const WEATHER_API_BASE = 'https://api.open-meteo.com/v1/meteofrance';
-    const BIKE_SPEED_KMH = 15;
     const CHECKPOINT_INTERVAL_H = 2;
-    const LUNCH_BREAK_CLOCK_HOUR = 12;
-    const LUNCH_BREAK_DURATION_H = 1;
     const MAX_FORECAST_DAYS = 4;
 
     const WMO_WEATHER = {
@@ -2625,10 +2630,43 @@
 
     const weatherStartDateInput = document.getElementById('weather-start-date');
     const weatherStartTimeInput = document.getElementById('weather-start-time');
+    const weatherSpeedInput = document.getElementById('weather-speed');
+    const weatherSpeedLabel = document.getElementById('weather-speed-label');
+    const weatherArrivalPreviewEl = document.getElementById('weather-arrival-preview');
     const weatherComputeBtn = document.getElementById('weather-compute-btn');
     const weatherStatusEl = document.getElementById('weather-status');
     const weatherResultsEl = document.getElementById('weather-results');
     weatherStartDateInput.value = new Date().toISOString().slice(0, 10);
+
+    // Aperçu instantané de l'heure d'arrivée du jour 1 (ou de la trace
+    // entière si aucun plan multi-jours n'est calculé) — juste pour donner
+    // un repère rapide de l'effet du curseur, sans lancer de calcul météo.
+    function updateWeatherArrivalPreview() {
+      weatherSpeedLabel.textContent = `${weatherSpeedInput.value} km/h`;
+      if (!currentTrackLine) { weatherArrivalPreviewEl.textContent = ''; return; }
+
+      const bounds = getDayBoundariesFull();
+      const day1DistanceKm = bounds[1] - bounds[0];
+      const speed = Number(weatherSpeedInput.value);
+      const hours = day1DistanceKm / speed;
+
+      const startDateStr = weatherStartDateInput.value;
+      const startTimeStr = weatherStartTimeInput.value || '08:00';
+      if (!startDateStr || isNaN(new Date(startDateStr + 'T00:00:00').getTime())) {
+        weatherArrivalPreviewEl.textContent = '';
+        return;
+      }
+      const [depH, depM] = startTimeStr.split(':').map(Number);
+      const departure = new Date(startDateStr + 'T00:00:00');
+      departure.setHours(depH, depM, 0, 0);
+      const arrival = new Date(departure.getTime() + hours * 3600 * 1000);
+      const timeLabel = arrival.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+      const dayLabel = bounds.length > 2 ? ' (jour 1)' : '';
+      weatherArrivalPreviewEl.textContent = `🏁 Arrivée prévue${dayLabel} : ${timeLabel} (${day1DistanceKm.toFixed(1)} km à ${speed} km/h)`;
+    }
+    weatherSpeedInput.addEventListener('input', updateWeatherArrivalPreview);
+    weatherStartDateInput.addEventListener('input', updateWeatherArrivalPreview);
+    weatherStartTimeInput.addEventListener('input', updateWeatherArrivalPreview);
 
     function elevationAtKm(km) {
       if (!elevationProfile || elevationProfile.length === 0) return null;
@@ -2646,6 +2684,7 @@
       const bounds = getDayBoundariesFull();
       const startDateStr = weatherStartDateInput.value;
       const startTimeStr = weatherStartTimeInput.value || '08:00';
+      const speed = Number(weatherSpeedInput.value);
       const checkpoints = [];
 
       // Sans cette garde, un champ date vidé par l'utilisateur produit une
@@ -2659,7 +2698,7 @@
         const dayStartKm = bounds[dayIndex];
         const dayEndKm = bounds[dayIndex + 1];
         const dayDistanceKm = dayEndKm - dayStartKm;
-        const totalRideHours = dayDistanceKm / BIKE_SPEED_KMH;
+        const totalRideHours = dayDistanceKm / speed;
 
         const departureTimeStr = dayIndex === 0 ? startTimeStr : '08:00';
         const [depH, depM] = departureTimeStr.split(':').map(Number);
@@ -2668,22 +2707,14 @@
         const departureDateTime = new Date(dayDate);
         departureDateTime.setHours(depH, depM, 0, 0);
 
-        const noonDateTime = new Date(dayDate);
-        noonDateTime.setHours(LUNCH_BREAK_CLOCK_HOUR, 0, 0, 0);
-        const rideHoursAtNoon = (noonDateTime.getTime() - departureDateTime.getTime()) / 3600000;
-        const hasLunchBreak = rideHoursAtNoon > 0 && rideHoursAtNoon < totalRideHours;
-
         const hourMarks = [];
         for (let h = 0; h < totalRideHours; h += CHECKPOINT_INTERVAL_H) hourMarks.push(h);
         if (hourMarks.length === 0 || hourMarks[hourMarks.length - 1] < totalRideHours) hourMarks.push(totalRideHours);
-        if (hasLunchBreak && !hourMarks.some(h => Math.abs(h - rideHoursAtNoon) < 0.05)) hourMarks.push(rideHoursAtNoon);
-        hourMarks.sort((a, b) => a - b);
 
         hourMarks.forEach(function (h) {
-          const km = dayStartKm + Math.min(h, totalRideHours) * BIKE_SPEED_KMH;
+          const km = dayStartKm + Math.min(h, totalRideHours) * speed;
           const pt = turf.along(currentTrackLine, km, { units: 'kilometers' });
-          const pauseOffsetH = hasLunchBreak && h >= rideHoursAtNoon ? LUNCH_BREAK_DURATION_H : 0;
-          const timestamp = new Date(departureDateTime.getTime() + (h + pauseOffsetH) * 3600 * 1000);
+          const timestamp = new Date(departureDateTime.getTime() + h * 3600 * 1000);
 
           checkpoints.push({
             dayIndex: dayIndex,
@@ -2692,7 +2723,6 @@
             lon: pt.geometry.coordinates[0],
             elevation: elevationAtKm(km),
             timestamp: timestamp,
-            isLunchBreak: hasLunchBreak && Math.abs(h - rideHoursAtNoon) < 0.05,
             isArrival: Math.abs(h - totalRideHours) < 0.001
           });
         });
@@ -2796,9 +2826,7 @@
           (c.precipitation > 0 ? `, ${c.precipitation.toFixed(1)} mm` : '') +
           `, vent ${Math.round(c.windSpeed)} km/h` +
           (c.windGusts && c.windGusts > c.windSpeed + 10 ? ` (rafales ${Math.round(c.windGusts)})` : '');
-        let prefix = '';
-        if (c.isLunchBreak) prefix = '🍽️ Pause déjeuner (~1h) — ';
-        else if (c.isArrival) prefix = '🏁 Arrivée — ';
+        let prefix = c.isArrival ? '🏁 Arrivée — ' : '';
 
         html += `<div class="weather-checkpoint"><div class="weather-cp-time">${timeLabel}</div>` +
           `<div class="weather-cp-icon">${weatherInfo.icon}</div>` +
