@@ -306,6 +306,8 @@
 
     /* Chips de filtre (case à cocher stylée en pilule) */
     .chip-row { display: flex; flex-wrap: wrap; gap: 7px; margin: 10px 0; }
+    #track-corridor-overview { font-size: 12px; color: var(--ink-soft); margin-top: 8px; line-height: 1.6; }
+    #track-corridor-overview b { color: var(--ink); }
     .chip-row label {
       display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none;
       font-size: 12px; font-weight: 600; color: var(--ink-soft);
@@ -570,7 +572,7 @@
     <button id="btn-otm">OpenTopo</button>
   </div>
 
-  <div id="app-version">build 2026-08-27-21 — fix : erreur bloquante au chargement (piège TDZ)</div>
+  <div id="app-version">build 2026-08-27-22 — filtres + overview sur la recherche corridor</div>
 
   <div id="elevation-panel">
     <div id="elevation-panel-header">
@@ -639,6 +641,8 @@
           Chercher le long de la trace
         </button>
         <div id="track-corridor-status" class="status-text"></div>
+        <div id="track-corridor-overview" style="display:none;"></div>
+        <div id="track-corridor-filters" class="chip-row" style="display:none;"></div>
         <div id="track-corridor-results"></div>
       </div>
 
@@ -1235,6 +1239,9 @@
       trackCorridorResultsEl.innerHTML = '';
       trackCorridorStatusEl.textContent = '';
       trackCorridorLayer.clearLayers();
+      trackCorridorOverviewEl.style.display = 'none';
+      trackCorridorFiltersEl.style.display = 'none';
+      trackCorridorAllPoints = [];
       navTabBtn.style.display = 'none';
       navCorridorPoints = null;
       if (activePanel === 'navigation') openSheet('trace');
@@ -2825,11 +2832,79 @@
     trackCorridorBufferInput.addEventListener('input', updateTrackCorridorBufferLabel);
     updateTrackCorridorBufferLabel();
 
+    const TRACK_CORRIDOR_LABELS = Object.assign(
+      { eau: "Points d'eau", hebergement: 'Hébergements', restaurant: 'Restaurants' },
+      Object.fromEntries(Object.entries(POI_CATEGORY_STYLE).map(([k, v]) => [k, v.label]))
+    );
+    const trackCorridorOverviewEl = document.getElementById('track-corridor-overview');
+    const trackCorridorFiltersEl = document.getElementById('track-corridor-filters');
+    let trackCorridorAllPoints = [];
+    let trackCorridorActiveFilters = null; // null = tout affiché (avant premier filtrage)
+
+    function renderTrackCorridorResults() {
+      const points = trackCorridorActiveFilters
+        ? trackCorridorAllPoints.filter(p => trackCorridorActiveFilters.has(p.category))
+        : trackCorridorAllPoints;
+
+      trackCorridorLayer.clearLayers();
+      let html = '';
+      points.forEach(function (p, i) {
+        const color = TRACK_CORRIDOR_COLORS[p.category] || '#777';
+        L.circleMarker([p.lat, p.lon], { radius: 8, fillColor: color, color: '#fff', weight: 2, fillOpacity: 0.95 })
+          .bindPopup(`<div class="poi-popup"><h4>${escapeHtml(p.name)}</h4><p>${escapeHtml(p.detail)}</p></div>`)
+          .addTo(trackCorridorLayer);
+        html += `<div class="around-me-item" data-index="${i}">` +
+          `<div><div class="around-me-item-name">${escapeHtml(p.name)}</div>` +
+          `<div class="around-me-item-type">${escapeHtml(p.detail)}</div></div>` +
+          `<div class="around-me-item-dist">km ${p.alongKm.toFixed(1)}</div></div>`;
+      });
+      trackCorridorResultsEl.innerHTML = html;
+      trackCorridorResultsEl.querySelectorAll('.around-me-item').forEach(function (item) {
+        item.addEventListener('click', function () {
+          const p = points[Number(item.dataset.index)];
+          map.flyTo([p.lat, p.lon], Math.max(map.getZoom(), 16), { duration: 0.6 });
+        });
+      });
+
+      trackCorridorStatusEl.textContent = `${points.length} / ${trackCorridorAllPoints.length} point(s) affiché(s).`;
+    }
+
+    function setupTrackCorridorOverviewAndFilters() {
+      const counts = {};
+      trackCorridorAllPoints.forEach(p => { counts[p.category] = (counts[p.category] || 0) + 1; });
+      const categories = Object.keys(counts).sort((a, b) => counts[b] - counts[a]);
+
+      trackCorridorOverviewEl.innerHTML = categories
+        .map(c => `<b>${counts[c]}</b> ${escapeHtml(TRACK_CORRIDOR_LABELS[c] || c)}`)
+        .join(' · ');
+      trackCorridorOverviewEl.style.display = categories.length ? 'block' : 'none';
+
+      trackCorridorActiveFilters = new Set(categories);
+      trackCorridorFiltersEl.innerHTML = categories.map(c =>
+        `<label><input type="checkbox" class="tc-filter" value="${c}" checked />` +
+        `<span class="chip-dot" style="background:${TRACK_CORRIDOR_COLORS[c] || '#777'}"></span>` +
+        `${escapeHtml(TRACK_CORRIDOR_LABELS[c] || c)} (${counts[c]})</label>`
+      ).join('');
+      trackCorridorFiltersEl.style.display = categories.length ? 'flex' : 'none';
+
+      trackCorridorFiltersEl.querySelectorAll('.tc-filter').forEach(function (cb) {
+        cb.addEventListener('change', function () {
+          trackCorridorActiveFilters = new Set(
+            Array.from(trackCorridorFiltersEl.querySelectorAll('.tc-filter'))
+              .filter(c => c.checked).map(c => c.value)
+          );
+          renderTrackCorridorResults();
+        });
+      });
+    }
+
     trackCorridorSearchBtn.addEventListener('click', async function () {
       if (!currentTrackLine) return;
       trackCorridorSearchBtn.disabled = true;
       trackCorridorLayer.clearLayers();
       trackCorridorResultsEl.innerHTML = '';
+      trackCorridorOverviewEl.style.display = 'none';
+      trackCorridorFiltersEl.style.display = 'none';
 
       try {
         const bufferKm = parseInt(trackCorridorBufferInput.value, 10);
@@ -2837,33 +2912,15 @@
         const bbox = turf.bbox(bufferPolygon);
 
         const points = await fetchCorridorPoints(bbox, function (msg) { trackCorridorStatusEl.textContent = msg; });
-
         points.forEach(function (p) {
           const snapped = turf.nearestPointOnLine(currentTrackLine, turf.point([p.lon, p.lat]), { units: 'kilometers' });
           p.alongKm = snapped.properties.location;
         });
         points.sort((a, b) => a.alongKm - b.alongKm);
 
-        let html = '';
-        points.forEach(function (p, i) {
-          const color = TRACK_CORRIDOR_COLORS[p.category] || '#777';
-          L.circleMarker([p.lat, p.lon], { radius: 8, fillColor: color, color: '#fff', weight: 2, fillOpacity: 0.95 })
-            .bindPopup(`<div class="poi-popup"><h4>${escapeHtml(p.name)}</h4><p>${escapeHtml(p.detail)}</p></div>`)
-            .addTo(trackCorridorLayer);
-          html += `<div class="around-me-item" data-index="${i}">` +
-            `<div><div class="around-me-item-name">${escapeHtml(p.name)}</div>` +
-            `<div class="around-me-item-type">${escapeHtml(p.detail)}</div></div>` +
-            `<div class="around-me-item-dist">km ${p.alongKm.toFixed(1)}</div></div>`;
-        });
-        trackCorridorResultsEl.innerHTML = html;
-        trackCorridorResultsEl.querySelectorAll('.around-me-item').forEach(function (item) {
-          item.addEventListener('click', function () {
-            const p = points[Number(item.dataset.index)];
-            map.flyTo([p.lat, p.lon], Math.max(map.getZoom(), 16), { duration: 0.6 });
-          });
-        });
-
-        trackCorridorStatusEl.textContent = `${points.length} point(s) trouvé(s) le long de la trace.`;
+        trackCorridorAllPoints = points;
+        setupTrackCorridorOverviewAndFilters();
+        renderTrackCorridorResults();
       } catch (err) {
         console.error('[track-corridor] erreur', err);
         trackCorridorStatusEl.textContent = `Erreur : ${err.message}`;
