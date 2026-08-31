@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[3.047929,44.6619139]},"properties":{"category":"shop","name":"Electro-Vélo","osm_id":6241472604}},{"type":"Feature","geometry":{"type":"Point","coordinates":[3.0478833,44.6618465]},"properties":{"category":"repair","osm_id":12192643690}}]}

@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[0.3401471,44.1276921]},"properties":{"category":"shop","name":"Nérac Cycles","osm_id":1876206232}},{"type":"Feature","geometry":{"type":"Point","coordinates":[0.3202,44.1967605]},"properties":{"category":"repair","osm_id":12628183465}}]}

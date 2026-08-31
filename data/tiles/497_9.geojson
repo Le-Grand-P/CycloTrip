@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[0.9650172,49.7058087]},"properties":{"category":"compressed_air","name":"Gonflage vélos","osm_id":9952381315}},{"type":"Feature","geometry":{"type":"Point","coordinates":[0.9982102,49.7861757]},"properties":{"category":"repair","opening_hours":"24/7","osm_id":13075846508}}]}

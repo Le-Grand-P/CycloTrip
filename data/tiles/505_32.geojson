@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[3.2108924,50.5688581]},"properties":{"category":"shop","name":"Gonzague et ses vélos","phone":"+33 6 35 25 90 34","osm_id":10807897735}},{"type":"Feature","geometry":{"type":"Point","coordinates":[3.2064534,50.5962467]},"properties":{"category":"repair","osm_id":13098957286}}]}

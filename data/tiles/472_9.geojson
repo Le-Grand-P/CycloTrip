@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[0.9997704,47.2089649]},"properties":{"category":"repair","osm_id":12049979467}},{"type":"Feature","geometry":{"type":"Point","coordinates":[0.9145115,47.2281009]},"properties":{"category":"repair","opening_hours":"24/7","osm_id":13891298673}}]}

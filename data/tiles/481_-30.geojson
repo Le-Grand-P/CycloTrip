@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[-2.9877129,48.1983566]},"properties":{"category":"shop","name":"Celti-bike","osm_id":9909471838}},{"type":"Feature","geometry":{"type":"Point","coordinates":[-2.9963397,48.1657741]},"properties":{"category":"repair","osm_id":9979711825}}]}

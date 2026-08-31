@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[4.9932379,45.8218052]},"properties":{"category":"shop","name":"Peloton de Beynost","phone":"+33 9 81 35 28 63","osm_id":9756532367}},{"type":"Feature","geometry":{"type":"Point","coordinates":[4.9539229,45.8223041]},"properties":{"category":"repair","osm_id":12744612906}}]}

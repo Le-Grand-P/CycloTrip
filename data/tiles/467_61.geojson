@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[6.1975458,46.7163278]},"properties":{"category":"shop","name":"Garage de la Varée","phone":"+33 3 81 69 20 06","osm_id":8957604630}},{"type":"Feature","geometry":{"type":"Point","coordinates":[6.1173342,46.7347517]},"properties":{"category":"repair","osm_id":14050551635}}]}

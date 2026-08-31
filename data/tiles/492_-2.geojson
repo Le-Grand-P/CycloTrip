@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[-0.192769,49.2697647]},"properties":{"category":"shop","name":"Bike 14","osm_id":9603407704}},{"type":"Feature","geometry":{"type":"Point","coordinates":[-0.1915555,49.2834871]},"properties":{"category":"repair","opening_hours":"24/7","osm_id":12986245126}}]}

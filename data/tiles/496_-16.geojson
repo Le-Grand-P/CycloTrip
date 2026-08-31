@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[-1.5506612,49.6312875]},"properties":{"category":"repair","osm_id":11703728981}},{"type":"Feature","geometry":{"type":"Point","coordinates":[-1.5900014,49.633985]},"properties":{"category":"shop","name":"La Tribu du Vélo","opening_hours":"Mo-Sa 09:00-19:00","osm_id":14101414396}}]}

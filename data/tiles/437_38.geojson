@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[3.8351186,43.7048732]},"properties":{"category":"repair","name":"Station de Gonflage gratuit","opening_hours":"24/7","osm_id":4541634644}},{"type":"Feature","geometry":{"type":"Point","coordinates":[3.8333077,43.7106243]},"properties":{"category":"repair","osm_id":12565180624}}]}

@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[-1.2434459,45.9670235]},"properties":{"category":"shop","name":"Roue Libre","osm_id":2412131137}},{"type":"Feature","geometry":{"type":"Point","coordinates":[-1.243506,45.9600222]},"properties":{"category":"repair","osm_id":13087746601}}]}

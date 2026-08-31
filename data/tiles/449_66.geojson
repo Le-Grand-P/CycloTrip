@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[6.6289527,44.9037247]},"properties":{"category":"compressed_air","osm_id":2309105851}},{"type":"Feature","geometry":{"type":"Point","coordinates":[6.6317307,44.9028963]},"properties":{"category":"shop","name":"Giant City","osm_id":14064573919}}]}

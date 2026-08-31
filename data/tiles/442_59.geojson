@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[5.9364152,44.2141886]},"properties":{"category":"repair","osm_id":6960333170}},{"type":"Feature","geometry":{"type":"Point","coordinates":[5.9111884,44.236507]},"properties":{"category":"compressed_air","osm_id":9836692760}}]}

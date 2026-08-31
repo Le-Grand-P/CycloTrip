@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[0.3544541,47.2956333]},"properties":{"category":"shop","name":"Loire Vélo Nature","phone":"+33 6 03 89 23 14","osm_id":3564042205}},{"type":"Feature","geometry":{"type":"Point","coordinates":[0.355115,47.2949873]},"properties":{"category":"wash","osm_id":3564042231}}]}

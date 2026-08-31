@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[0.8570052,44.1164394]},"properties":{"category":"repair","osm_id":12022607323}},{"type":"Feature","geometry":{"type":"Point","coordinates":[0.8636838,44.1131854]},"properties":{"category":"shop","name":"GO Cycles","phone":"+33 5 63 95 82 07","osm_id":12433256394}}]}

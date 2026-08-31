@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[0.9816655,47.4179619]},"properties":{"category":"shop","phone":"+33 2 47 57 01 79","osm_id":957518860}},{"type":"Feature","geometry":{"type":"Point","coordinates":[0.981723,47.4127033]},"properties":{"category":"repair","opening_hours":"24/7","osm_id":13758670886}}]}

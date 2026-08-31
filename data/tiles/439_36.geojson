@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[3.6028533,43.986468]},"properties":{"category":"shop","name":"La Bicyclette Viganaise","phone":"+33 4 67 81 11 88","osm_id":11986923945}},{"type":"Feature","geometry":{"type":"Point","coordinates":[3.6031606,43.9831008]},"properties":{"category":"repair","osm_id":13068286779}}]}

@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[6.0091688,44.0986454]},"properties":{"category":"repair","osm_id":6959750981}},{"type":"Feature","geometry":{"type":"Point","coordinates":[6.0096005,44.0982925]},"properties":{"category":"wash","name":"Nettoyeur basse pression vélos","osm_id":13532400772}}]}

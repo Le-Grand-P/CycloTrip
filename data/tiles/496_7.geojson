@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[0.7515104,49.6165277]},"properties":{"category":"shop","name":"La bicyclerie","osm_id":6286407084}},{"type":"Feature","geometry":{"type":"Point","coordinates":[0.7516188,49.6165822]},"properties":{"category":"repair","osm_id":12078860601}}]}

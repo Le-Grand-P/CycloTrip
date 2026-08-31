@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[1.3740397,48.1780038]},"properties":{"category":"compressed_air","name":"Carrefour Market","osm_id":4352571289}},{"type":"Feature","geometry":{"type":"Point","coordinates":[1.3884049,48.1798157]},"properties":{"category":"repair","opening_hours":"24/7","osm_id":13161779353}}]}

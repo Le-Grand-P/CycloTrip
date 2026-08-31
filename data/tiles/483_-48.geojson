@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[-4.7012892,48.3626275]},"properties":{"category":"shop","name":"PLG","osm_id":2658144030}},{"type":"Feature","geometry":{"type":"Point","coordinates":[-4.7684679,48.3315349]},"properties":{"category":"repair","opening_hours":"24/7","osm_id":11200473630}}]}

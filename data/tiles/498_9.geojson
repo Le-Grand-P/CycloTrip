@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[0.9583596,49.8372884]},"properties":{"category":"compressed_air","osm_id":9034227746}},{"type":"Feature","geometry":{"type":"Point","coordinates":[0.9583741,49.8373163]},"properties":{"category":"repair","name":"Luftpumpe","osm_id":14041179089}}]}

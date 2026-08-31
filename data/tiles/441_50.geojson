@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[5.0294931,44.1203515]},"properties":{"category":"repair","osm_id":13020434196}},{"type":"Feature","geometry":{"type":"Point","coordinates":[5.0522558,44.1464211]},"properties":{"category":"shop","name":"Cycles Renard Dentelles","osm_id":13326701438}}]}

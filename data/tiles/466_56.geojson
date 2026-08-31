@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[5.6779581,46.6406158]},"properties":{"category":"repair","opening_hours":"24/7","osm_id":9598985580}},{"type":"Feature","geometry":{"type":"Point","coordinates":[5.6026547,46.6553746]},"properties":{"category":"shop","name":"L'étincelle Métallerie","osm_id":10748718255}}]}

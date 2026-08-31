@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[-1.9801501,48.3839764]},"properties":{"category":"repair","osm_id":9904511526}},{"type":"Feature","geometry":{"type":"Point","coordinates":[-1.9942215,48.3616315]},"properties":{"category":"shop","name":"Pignons sur Roue","phone":"+33 2 96 86 42 07","osm_id":10259633007}}]}

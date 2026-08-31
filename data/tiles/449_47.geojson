@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[4.7012953,44.9193137]},"properties":{"category":"wash","osm_id":13149424458}},{"type":"Feature","geometry":{"type":"Point","coordinates":[4.7013088,44.9193239]},"properties":{"category":"compressed_air","osm_id":13149424459}}]}
