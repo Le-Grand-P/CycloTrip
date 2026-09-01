@@ -139,7 +139,7 @@
       left: 0;
       right: 0;
       bottom: 0;
-      height: 220px;
+      height: 260px;
       background: var(--surface);
       box-shadow: 0 -8px 24px rgba(20, 24, 26, 0.2);
       z-index: 1400;
@@ -151,12 +151,10 @@
     }
     #elevation-panel-header {
       display: flex;
-      justify-content: space-between;
+      justify-content: flex-end;
       align-items: center;
-      font-size: 12.5px;
-      margin-bottom: 6px;
+      margin-bottom: 2px;
     }
-    #elevation-panel-info { font-weight: 700; }
     #elevation-close-btn {
       border: none;
       background: var(--bg-app);
@@ -170,7 +168,114 @@
       justify-content: center;
     }
     #elevation-close-btn svg { width: 14px; height: 14px; }
-    #elevation-svg { width: 100%; height: 165px; cursor: crosshair; }
+
+    #elevation-stats-bar {
+      display: flex;
+      gap: 16px;
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--ink);
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+    #elevation-stats-bar .stat-item { display: flex; align-items: center; gap: 5px; }
+    #elevation-stats-bar svg { width: 15px; height: 15px; color: var(--ink-faint); flex-shrink: 0; }
+
+    #elevation-x-axis {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--ink-soft);
+      padding-left: 34px; /* aligné avec la largeur réservée à l'échelle Y */
+      margin-bottom: 2px;
+    }
+
+    #elevation-chart-row { display: flex; gap: 6px; position: relative; }
+    #elevation-y-axis {
+      width: 28px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      font-size: 10.5px;
+      font-weight: 700;
+      color: var(--ink-faint);
+      text-align: right;
+      padding: 2px 0;
+    }
+    #elevation-chart-wrap { position: relative; flex: 1; min-width: 0; }
+    #elevation-svg { width: 100%; height: 150px; display: block; cursor: crosshair; }
+    .elevation-endpoint-marker {
+      position: absolute;
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+    #elevation-start-marker { background: var(--brand); color: white; }
+    #elevation-end-marker { background: var(--danger); color: white; top: 8px; }
+    .elevation-endpoint-marker svg { width: 11px; height: 11px; }
+
+    /* ---------- Sélecteur d'hébergement (grande liste) ---------- */
+    #lodging-picker-overlay {
+      display: none;
+      position: absolute; inset: 0;
+      background: rgba(20,24,26,0.5);
+      z-index: 1500;
+    }
+    #lodging-picker-overlay.open { display: block; }
+    #lodging-picker-panel {
+      display: none;
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      max-height: 78vh;
+      background: var(--surface);
+      border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+      box-shadow: var(--shadow-float);
+      z-index: 1501;
+      display: flex;
+      flex-direction: column;
+    }
+    #lodging-picker-panel.open { display: flex; }
+    .lodging-picker-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 18px 10px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .lodging-picker-header span { font-size: 15px; font-weight: 800; }
+    #lodging-picker-close {
+      border: none; background: var(--bg-app);
+      width: 30px; height: 30px; border-radius: 999px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+    }
+    #lodging-picker-close svg { width: 15px; height: 15px; }
+    #lodging-picker-list { overflow-y: auto; padding: 8px 12px 24px; }
+    .lodging-option {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 8px;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+    }
+    .lodging-option:last-child { border-bottom: none; }
+    .lodging-option:active { background: var(--bg-app); }
+    .lodging-option.current { background: #EAF3EC; }
+    .lodging-option-badge {
+      width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+      background: var(--brand-soft); color: var(--brand-dark);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px;
+    }
+    .lodging-option-body { flex: 1; min-width: 0; }
+    .lodging-option-name { font-size: 13.5px; font-weight: 800; color: var(--ink); }
+    .lodging-option-meta { font-size: 11.5px; color: var(--ink-soft); margin-top: 2px; display: flex; gap: 10px; flex-wrap: wrap; }
+    .lodging-option-meta span { white-space: nowrap; }
+
 
     /* ---------- Navigation flottante du bas ---------- */
     #bottom-nav {
@@ -681,23 +786,38 @@
 
   <div id="elevation-panel">
     <div id="elevation-panel-header">
-      <span id="elevation-panel-info">Profil de dénivelé</span>
       <button id="elevation-close-btn">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
       </button>
     </div>
-    <svg id="elevation-svg" viewBox="0 0 1000 165" preserveAspectRatio="none">
-      <defs>
-        <linearGradient id="elevation-fill-gradient" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#7CB518" stop-opacity="0.28" />
-          <stop offset="100%" stop-color="#7CB518" stop-opacity="0" />
-        </linearGradient>
-      </defs>
-      <polygon id="elevation-fill" points="" fill="url(#elevation-fill-gradient)" />
-      <polyline id="elevation-line" points="" fill="none" stroke="#7CB518" stroke-width="2" vector-effect="non-scaling-stroke" />
-      <line id="elevation-cursor-line" x1="0" y1="0" x2="0" y2="165" stroke="#1E88E5" stroke-width="1" vector-effect="non-scaling-stroke" style="display:none;" />
-      <circle id="elevation-cursor-dot" r="4" fill="#1E88E5" stroke="white" stroke-width="1.5" style="display:none;" />
-    </svg>
+    <div id="elevation-stats-bar">
+      <span class="stat-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg><span id="elevation-stat-duration">–</span></span>
+      <span class="stat-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="7 8 3 12 7 16"></polyline><polyline points="17 8 21 12 17 16"></polyline><line x1="3" y1="12" x2="21" y2="12"></line></svg><span id="elevation-stat-distance">–</span></span>
+      <span class="stat-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg><span id="elevation-stat-dplus">–</span></span>
+      <span class="stat-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="7" x2="17" y2="17"></line><polyline points="17 7 17 17 7 17"></polyline></svg><span id="elevation-stat-dminus">–</span></span>
+    </div>
+    <div id="elevation-x-axis">
+      <span>Start</span><span></span><span></span><span></span>
+    </div>
+    <div id="elevation-chart-row">
+      <div id="elevation-y-axis">
+        <span id="elevation-y-max">–</span>
+        <span id="elevation-y-min">–</span>
+      </div>
+      <div id="elevation-chart-wrap">
+        <svg id="elevation-svg" viewBox="0 0 1000 150" preserveAspectRatio="none">
+          <g id="elevation-segments"></g>
+          <line id="elevation-cursor-line" x1="0" y1="0" x2="0" y2="150" stroke="#1E88E5" stroke-width="1" vector-effect="non-scaling-stroke" style="display:none;" />
+          <circle id="elevation-cursor-dot" r="4" fill="#1E88E5" stroke="white" stroke-width="1.5" style="display:none;" />
+        </svg>
+        <div id="elevation-start-marker" class="elevation-endpoint-marker">
+          <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21"></polygon></svg>
+        </div>
+        <div id="elevation-end-marker" class="elevation-endpoint-marker">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="22" x2="4" y2="2"></line><path d="M4 3h14l-3 4.5L18 12H4"></path></svg>
+        </div>
+      </div>
+    </div>
   </div>
 
   <button id="locate-btn" class="map-fab" title="Ma position">
@@ -984,6 +1104,17 @@
     </button>
   </nav>
 
+  <div id="lodging-picker-overlay"></div>
+  <div id="lodging-picker-panel">
+    <div class="lodging-picker-header">
+      <span id="lodging-picker-title">Choisir un hébergement</span>
+      <button id="lodging-picker-close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
+    <div id="lodging-picker-list"></div>
+  </div>
+
   <div id="navigation-view" style="display:none;">
     <div id="nav-stats-row">
       <div class="nav-stat"><span class="nav-stat-value" id="nav-km-done">–</span><span class="nav-stat-label">km parcourus</span></div>
@@ -1227,13 +1358,20 @@
     const elevationMiniCard = document.getElementById('elevation-mini-card');
     const elevationMiniLine = document.getElementById('elevation-mini-line');
     const elevationPanel = document.getElementById('elevation-panel');
-    const elevationPanelInfo = document.getElementById('elevation-panel-info');
     const elevationCloseBtn = document.getElementById('elevation-close-btn');
     const elevationSvg = document.getElementById('elevation-svg');
-    const elevationLine = document.getElementById('elevation-line');
-    const elevationFill = document.getElementById('elevation-fill');
+    const elevationSegmentsG = document.getElementById('elevation-segments');
     const elevationCursorLine = document.getElementById('elevation-cursor-line');
     const elevationCursorDot = document.getElementById('elevation-cursor-dot');
+    const elevationStatDuration = document.getElementById('elevation-stat-duration');
+    const elevationStatDistance = document.getElementById('elevation-stat-distance');
+    const elevationStatDplus = document.getElementById('elevation-stat-dplus');
+    const elevationStatDminus = document.getElementById('elevation-stat-dminus');
+    const elevationYMax = document.getElementById('elevation-y-max');
+    const elevationYMin = document.getElementById('elevation-y-min');
+    const elevationXAxis = document.getElementById('elevation-x-axis');
+    const elevationStartMarker = document.getElementById('elevation-start-marker');
+    const elevationEndMarker = document.getElementById('elevation-end-marker');
     let elevationProfile = null;
     let elevationCursorMarker = null;
 
@@ -1310,17 +1448,143 @@
       elevationMiniCard.style.display = 'block';
     }
 
+    // =========================================================
+    // Profil de dénivelé agrandi — courbe colorée par pente, échelles,
+    // stats en tête, repères départ/arrivée (inspiré de l'affichage Komoot).
+    // =========================================================
+
+    // Nombre de segments visuels, indépendant de la densité de la trace
+    // source — une trace BRouter peut avoir des milliers de points, les
+    // ré-échantillonner à un nombre fixe garantit un rendu de coût constant
+    // et évite de générer des milliers d'éléments SVG.
+    const ELEVATION_VISUAL_SEGMENTS = 150;
+
+    // Couleur selon la pente en montée uniquement — une descente, même
+    // raide, reste verte : c'est l'effort (donc la montée) qui importe pour
+    // ce repère visuel, pas la pente en valeur absolue.
+    function elevationGradientColor(slopePct) {
+      if (slopePct <= 3) return '#8BC34A';
+      if (slopePct <= 6) return '#FFC107';
+      if (slopePct <= 9) return '#FF9800';
+      return '#E53935';
+    }
+
+    // Ré-échantillonne à intervalles de distance réguliers (pas par index de
+    // point source) — indispensable pour un rendu cohérent peu importe la
+    // densité irrégulière de la trace d'origine.
+    function resampleElevationProfile(profile, n) {
+      const totalKm = profile[profile.length - 1].distKm || 0;
+      const out = [];
+      let idx = 0;
+      for (let i = 0; i <= n; i++) {
+        const targetKm = (i / n) * totalKm;
+        while (idx < profile.length - 2 && profile[idx + 1].distKm < targetKm) idx++;
+        const a = profile[idx], b = profile[idx + 1] || a;
+        const span = b.distKm - a.distKm;
+        const t = span > 0 ? (targetKm - a.distKm) / span : 0;
+        out.push({ distKm: targetKm, ele: a.ele + (b.ele - a.ele) * t });
+      }
+      return out;
+    }
+
+    function buildColoredElevationSegments(profile, viewBoxW, viewBoxH) {
+      const resampled = resampleElevationProfile(profile, ELEVATION_VISUAL_SEGMENTS);
+      const totalKm = resampled[resampled.length - 1].distKm || 1;
+      const eles = resampled.map(p => p.ele);
+      const minEle = Math.min.apply(null, eles);
+      const maxEle = Math.max.apply(null, eles);
+      const eleRange = (maxEle - minEle) || 1;
+      const paddingRatio = 0.08;
+      const usableH = viewBoxH * (1 - 2 * paddingRatio);
+      const topPad = viewBoxH * paddingRatio;
+      const baselineY = viewBoxH;
+
+      function toXY(p) {
+        const x = (p.distKm / totalKm) * viewBoxW;
+        const y = topPad + usableH - ((p.ele - minEle) / eleRange) * usableH;
+        return [x, y];
+      }
+
+      const segments = [];
+      for (let i = 1; i < resampled.length; i++) {
+        const a = resampled[i - 1], b = resampled[i];
+        const distM = (b.distKm - a.distKm) * 1000;
+        const slopePct = distM > 0 ? ((b.ele - a.ele) / distM) * 100 : 0;
+        const color = elevationGradientColor(slopePct);
+        const [x1, y1] = toXY(a), [x2, y2] = toXY(b);
+        segments.push({ x1, y1, x2, y2, color });
+      }
+
+      return { segments, minEle, maxEle, totalKm, startEle: resampled[0].ele, baselineY };
+    }
+
+    // Vitesse/pénalité identiques à celles utilisées pour les stats de jour
+    // (BIKE_SPEED_KMH, CLIMB_PENALTY_MIN_PER_100M) — cohérence avec le
+    // reste de l'app plutôt qu'une nouvelle estimation séparée.
+    function computeElevationStats(profile) {
+      const distanceKm = profile[profile.length - 1].distKm;
+      let dPlus = 0, dMinus = 0;
+      for (let i = 1; i < profile.length; i++) {
+        const d = profile[i].ele - profile[i - 1].ele;
+        if (d > 0) dPlus += d; else dMinus += -d;
+      }
+      const baseHours = distanceKm / BIKE_SPEED_KMH;
+      const climbHours = (dPlus / 100) * CLIMB_PENALTY_MIN_PER_100M / 60;
+      const durationHours = baseHours + climbHours;
+      return { distanceKm, dPlus: Math.round(dPlus), dMinus: Math.round(dMinus), durationHours };
+    }
+
+    function formatDurationHM(hours) {
+      const totalMin = Math.round(hours * 60);
+      const h = Math.floor(totalMin / 60), m = totalMin % 60;
+      return h > 0 ? `${h}h${String(m).padStart(2, '0')}` : `${m}min`;
+    }
+
     function renderElevationBig() {
       if (!elevationProfile) return;
-      const points = buildElevationPolylinePoints(elevationProfile, 1000, 165);
-      elevationLine.setAttribute('points', points);
-      elevationFill.setAttribute('points', `0,165 ${points} 1000,165`);
-      const eles = elevationProfile.map(p => p.ele);
-      const minEle = Math.round(Math.min.apply(null, eles));
-      const maxEle = Math.round(Math.max.apply(null, eles));
-      const totalKm = elevationProfile[elevationProfile.length - 1].distKm.toFixed(1);
-      elevationPanelInfo.textContent = `${totalKm} km — ${minEle} m à ${maxEle} m d'altitude`;
+
+      const { segments, minEle, maxEle, totalKm, startEle, baselineY } =
+        buildColoredElevationSegments(elevationProfile, 1000, 150);
+
+      // Un <polygon> de remplissage + une <line> de contour par segment —
+      // ~300 éléments SVG au total pour 150 segments, sans lien avec le
+      // nombre de points de la trace source (voir ELEVATION_VISUAL_SEGMENTS).
+      let svg = '';
+      segments.forEach(function (s) {
+        svg += `<polygon points="${s.x1.toFixed(1)},${baselineY} ${s.x1.toFixed(1)},${s.y1.toFixed(1)} ${s.x2.toFixed(1)},${s.y2.toFixed(1)} ${s.x2.toFixed(1)},${baselineY}" fill="${s.color}" fill-opacity="0.35" />`;
+        svg += `<line x1="${s.x1.toFixed(1)}" y1="${s.y1.toFixed(1)}" x2="${s.x2.toFixed(1)}" y2="${s.y2.toFixed(1)}" stroke="${s.color}" stroke-width="2.5" vector-effect="non-scaling-stroke" />`;
+      });
+      elevationSegmentsG.innerHTML = svg;
+
+      // Barre de stats — mêmes icônes/ordre que la maquette de référence :
+      // durée, distance, D+, D-.
+      const stats = computeElevationStats(elevationProfile);
+      elevationStatDuration.textContent = formatDurationHM(stats.durationHours);
+      elevationStatDistance.textContent = `${stats.distanceKm.toFixed(1)} km`;
+      elevationStatDplus.textContent = `${stats.dPlus} m`;
+      elevationStatDminus.textContent = `${stats.dMinus} m`;
+
+      // Échelle Y : min/max réels du profil affiché.
+      elevationYMax.textContent = `${Math.round(maxEle)} m`;
+      elevationYMin.textContent = `${Math.round(minEle)} m`;
+
+      // Échelle X : Départ, puis 3 repères de distance également espacés.
+      const xLabels = elevationXAxis.querySelectorAll('span');
+      xLabels[0].textContent = 'Start';
+      xLabels[1].textContent = `${(totalKm / 3).toFixed(1)} km`;
+      xLabels[2].textContent = `${(totalKm * 2 / 3).toFixed(1)} km`;
+      xLabels[3].textContent = `${totalKm.toFixed(1)} km`;
+
+      // Repère de départ positionné à la hauteur réelle du profil à cet
+      // endroit — l'arrivée reste fixe en haut à droite (comme la maquette).
+      const eleRange = (maxEle - minEle) || 1;
+      const startYPct = 8 + (1 - (startEle - minEle) / eleRange) * 84; // même logique de marge que le graphique (8%)
+      elevationStartMarker.style.left = '0%';
+      elevationStartMarker.style.top = startYPct + '%';
+      elevationEndMarker.style.right = '0';
+      elevationEndMarker.style.left = 'auto';
     }
+
 
     function hideElevationCursor() {
       elevationCursorLine.style.display = 'none';
@@ -1365,7 +1629,7 @@
       const fraction = (clientX - rect.left) / rect.width;
       const point = findProfilePointAtFraction(fraction);
       const totalKm = elevationProfile[elevationProfile.length - 1].distKm || 1;
-      const viewBoxW = 1000, viewBoxH = 165;
+      const viewBoxW = 1000, viewBoxH = 150;
       const x = (point.distKm / totalKm) * viewBoxW;
       const eles = elevationProfile.map(p => p.ele);
       const minEle = Math.min.apply(null, eles);
@@ -1776,7 +2040,7 @@
       });
       marker.on('dragend', function () {
         renderRouteWaypointsList();
-        routeCalcStatusEl.textContent = '';
+        calculateRoute();
       });
 
       routeWaypoints.splice(insertAt, 0, wp);
@@ -2125,16 +2389,32 @@
       return feature;
     }
 
+    let routeCalcGeneration = 0; // protège contre un calcul périmé qui se termine après un plus récent
+
     async function calculateRoute() {
       if (routeWaypoints.length < 2) return;
+      const myGeneration = ++routeCalcGeneration;
       routeCalculateBtn.disabled = true;
       routeCalcStatusEl.textContent = 'Calcul de l\'itinéraire…';
-      routePreviewLayer.clearLayers();
+      // La trace précédente reste affichée pendant le calcul — clearLayers()
+      // n'intervient qu'une fois le nouveau résultat prêt (juste avant de le
+      // dessiner), pas ici. Avant ce correctif, la carte se retrouvait vide
+      // pendant tout le calcul, en particulier gênant avec le recalcul
+      // automatique déclenché à chaque glissement de point.
 
       try {
         const profile = brouterProfileSelect.value;
         const feature = await calculateBRouterRouteWithRetry(routeWaypoints, profile,
-          (attempt, max) => { routeCalcStatusEl.textContent = `Raté ponctuel du serveur, nouvelle tentative (${attempt + 1}/${max})…`; });
+          (attempt, max) => {
+            if (myGeneration === routeCalcGeneration) {
+              routeCalcStatusEl.textContent = `Raté ponctuel du serveur, nouvelle tentative (${attempt + 1}/${max})…`;
+            }
+          });
+        // Un calcul plus récent a démarré entre-temps (nouveau glissement,
+        // nouvelle étape...) — ce résultat est périmé, on l'ignore purement
+        // et simplement plutôt que d'écraser un tracé plus à jour.
+        if (myGeneration !== routeCalcGeneration) return;
+
         const coords3d = feature.geometry.coordinates; // [lon, lat, ele?] par point
 
         const line = turf.lineString(coords3d.map(c => [c[0], c[1]]));
@@ -2150,6 +2430,9 @@
         }
         const profileLabel = brouterProfileSelect.label;
 
+        // Remplacement atomique : l'ancien tracé disparaît et le nouveau
+        // apparaît dans le même instant, jamais de trou entre les deux.
+        routePreviewLayer.clearLayers();
         const latlngs = coords3d.map(c => [c[1], c[0]]);
         L.polyline(latlngs, { color: '#E91E63', weight: 4, opacity: 0.9 }).addTo(routePreviewLayer);
         map.fitBounds(L.latLngBounds(latlngs));
@@ -2164,10 +2447,14 @@
           ? ''
           : "Itinéraire calculé, mais sans données d'altitude dans la réponse — profil de dénivelé indisponible pour cette trace.";
       } catch (err) {
+        if (myGeneration !== routeCalcGeneration) return; // idem pour une erreur périmée
+        // La trace précédente n'a jamais été effacée : elle reste visible,
+        // cohérent avec le message d'erreur (mieux vaut voir le dernier
+        // tracé valide qu'une carte vide).
         console.error('[brouter] erreur', err);
         routeCalcStatusEl.textContent = `Erreur : ${err.message}`;
       } finally {
-        routeCalculateBtn.disabled = routeWaypoints.length < 2;
+        if (myGeneration === routeCalcGeneration) routeCalculateBtn.disabled = routeWaypoints.length < 2;
       }
     }
 
@@ -3440,7 +3727,7 @@
           if (night) {
             const label = poiLabel(night.poi);
             html += `<div class="day-card-endpoint">Arrivée : ${escapeHtml(label)}</div>`;
-            html += buildNightSelect(i, night);
+            html += `<button class="btn-block btn-outline lodging-change-btn" data-night-index="${i}" style="margin:8px 0;">Changer d'hébergement</button>`;
             html += `<div class="day-card-detail-toggle" data-index="${i}">Voir les détails ▾</div>`;
             html += `<div class="day-card-detail" id="night-detail-${i}" style="display:none;"></div>`;
           } else {
@@ -3474,12 +3761,9 @@
       });
 
       if (dayplanMode === 'hebergements') {
-        dayplanResultsEl.querySelectorAll('.day-card-select').forEach(function (sel) {
-          sel.addEventListener('change', function () {
-            const nightIndex = Number(sel.dataset.nightIndex);
-            const uuid = sel.value;
-            const candidate = lodgingCandidates.find(c => c.poi.uuid === uuid);
-            if (candidate) recomputeFromNightEdit(nightIndex, candidate);
+        dayplanResultsEl.querySelectorAll('.lodging-change-btn').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            openLodgingPicker(Number(btn.dataset.nightIndex));
           });
         });
         dayplanResultsEl.querySelectorAll('.day-card-detail-toggle').forEach(function (toggle) {
@@ -3499,7 +3783,29 @@
       }
     }
 
-    function buildNightSelect(nightIndex, currentNight) {
+    const lodgingPickerOverlay = document.getElementById('lodging-picker-overlay');
+    const lodgingPickerPanel = document.getElementById('lodging-picker-panel');
+    const lodgingPickerTitle = document.getElementById('lodging-picker-title');
+    const lodgingPickerList = document.getElementById('lodging-picker-list');
+    const lodgingPickerClose = document.getElementById('lodging-picker-close');
+
+    function closeLodgingPicker() {
+      lodgingPickerOverlay.classList.remove('open');
+      lodgingPickerPanel.classList.remove('open');
+    }
+    lodgingPickerClose.addEventListener('click', closeLodgingPicker);
+    lodgingPickerOverlay.addEventListener('click', closeLodgingPicker);
+
+    // Grande liste plutôt qu'un menu déroulant natif — pour chaque
+    // hébergement candidat : la durée du jour qui y mène (km + D+ depuis la
+    // fin du jour précédent), et le détour qu'il représente par rapport à
+    // la trace. Le détour est estimé aller-retour (2x la distance à vol
+    // d'oiseau jusqu'à la trace) : hypothèse assumée, pas une mesure
+    // exacte, puisqu'on ne recalcule pas d'itinéraire réel jusqu'au lieu.
+    function openLodgingPicker(nightIndex) {
+      const currentNight = dayNightPoints[nightIndex];
+      if (!currentNight) return;
+
       const usedIds = new Set(dayNightPoints.filter(Boolean).map(p => p.poi.uuid));
       usedIds.delete(currentNight.poi.uuid);
 
@@ -3508,19 +3814,46 @@
         .filter(c => !usedIds.has(c.poi.uuid))
         .slice()
         .sort((a, b) => Math.abs(a.alongKm - idealKm) - Math.abs(b.alongKm - idealKm))
-        .slice(0, 6);
+        .slice(0, 20); // grande liste, mais pas illimitée non plus
 
       if (!alternatives.some(a => a.poi.uuid === currentNight.poi.uuid)) alternatives.unshift(currentNight);
 
-      let html = `<select class="day-card-select" data-night-index="${nightIndex}">`;
-      alternatives.forEach(function (c) {
+      // Le jour qui précède cette nuit part de la fin de la nuit
+      // précédente — ou du tout début de la trace pour la première nuit.
+      const prevBoundaryKm = nightIndex > 0 && dayNightPoints[nightIndex - 1]
+        ? dayNightPoints[nightIndex - 1].alongKm
+        : 0;
+
+      lodgingPickerTitle.textContent = `Hébergement — nuit ${nightIndex + 1}`;
+      lodgingPickerList.innerHTML = alternatives.map(function (c) {
         const label = poiLabel(c.poi);
-        const selected = c.poi.uuid === currentNight.poi.uuid ? ' selected' : '';
-        html += `<option value="${c.poi.uuid}"${selected}>${escapeHtml(label)} — km ${c.alongKm.toFixed(1)}</option>`;
+        const isCurrent = c.poi.uuid === currentNight.poi.uuid;
+        const dayDistKm = Math.max(0, c.alongKm - prevBoundaryKm);
+        const dayDplus = elevationGainTraveling(prevBoundaryKm, c.alongKm);
+        const detourKm = c.distKm * 2; // aller-retour estimé, voir commentaire ci-dessus
+        return `<div class="lodging-option${isCurrent ? ' current' : ''}" data-uuid="${escapeHtml(c.poi.uuid)}">` +
+          `<div class="lodging-option-badge">🏨</div>` +
+          `<div class="lodging-option-body">` +
+          `<div class="lodging-option-name">${escapeHtml(label)}</div>` +
+          `<div class="lodging-option-meta">` +
+          `<span>📍 km ${c.alongKm.toFixed(1)}</span>` +
+          `<span>🚴 ${dayDistKm.toFixed(1)} km avant, +${dayDplus} m D+</span>` +
+          `<span>↩️ +${detourKm.toFixed(1)} km de détour estimé</span>` +
+          `</div></div></div>`;
+      }).join('');
+
+      lodgingPickerList.querySelectorAll('.lodging-option').forEach(function (row) {
+        row.addEventListener('click', function () {
+          const candidate = lodgingCandidates.find(c => c.poi.uuid === row.dataset.uuid);
+          if (candidate) recomputeFromNightEdit(nightIndex, candidate);
+          closeLodgingPicker();
+        });
       });
-      html += `</select>`;
-      return html;
+
+      lodgingPickerOverlay.classList.add('open');
+      lodgingPickerPanel.classList.add('open');
     }
+
 
     dayplanComputeBtn.addEventListener('click', async function () {
       const nbDays = parseInt(dayplanNbDaysInput.value, 10);
