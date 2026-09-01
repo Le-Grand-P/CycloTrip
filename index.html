@@ -1710,7 +1710,7 @@
       });
       routeWaypointsListEl.innerHTML = html;
       routeWaypointsListEl.querySelectorAll('.route-waypoint-remove').forEach(function (btn) {
-        btn.addEventListener('click', function () { removeRouteWaypoint(Number(btn.dataset.index)); });
+        btn.addEventListener('click', function () { removeRouteWaypoint(Number(btn.dataset.index)); calculateRoute(); });
       });
     }
 
@@ -1964,13 +1964,14 @@
     }
 
     attachPlaceAutocomplete(placeInputDepart, document.getElementById('place-suggestions-depart'),
-      (lat, lon, label) => { setDeparture(lat, lon, label); map.flyTo([lat, lon], Math.max(map.getZoom(), 13), { duration: 0.6 }); });
+      (lat, lon, label) => { setDeparture(lat, lon, label); map.flyTo([lat, lon], Math.max(map.getZoom(), 13), { duration: 0.6 }); calculateRoute(); });
     attachPlaceAutocomplete(placeInputArrivee, document.getElementById('place-suggestions-arrivee'),
-      (lat, lon, label) => { setArrival(lat, lon, label); map.flyTo([lat, lon], Math.max(map.getZoom(), 13), { duration: 0.6 }); });
+      (lat, lon, label) => { setArrival(lat, lon, label); map.flyTo([lat, lon], Math.max(map.getZoom(), 13), { duration: 0.6 }); calculateRoute(); });
     attachPlaceAutocomplete(placeInputEtape, document.getElementById('place-suggestions-etape'),
       (lat, lon, label) => {
         addWaypointBetween(lat, lon, label);
         map.flyTo([lat, lon], Math.max(map.getZoom(), 13), { duration: 0.6 });
+        calculateRoute();
         placeInputEtape.value = '';
         // Le champ reste utilisable immédiatement pour ajouter une étape
         // suivante — remis au point pour que ce soit visible à l'usage.
@@ -2004,24 +2005,29 @@
 
     // Fonctions globales (pas des const) : appelées depuis les attributs
     // onclick du HTML de popup, même schéma que assignHebergementToSelectedDay
-    // plus haut dans ce fichier.
+    // plus haut dans ce fichier. Chacune redéclenche le calcul de
+    // l'itinéraire — calculateRoute() ignore déjà silencieusement les cas
+    // où il y a moins de 2 points, pas besoin de vérifier ici.
     function setDepartureFromClickPopup() {
       if (!pendingClickLatLng) return;
       setDeparture(pendingClickLatLng.lat, pendingClickLatLng.lng);
       map.closePopup();
       pendingClickLatLng = null;
+      calculateRoute();
     }
     function setArrivalFromClickPopup() {
       if (!pendingClickLatLng) return;
       setArrival(pendingClickLatLng.lat, pendingClickLatLng.lng);
       map.closePopup();
       pendingClickLatLng = null;
+      calculateRoute();
     }
     function addWaypointFromClickPopup() {
       if (!pendingClickLatLng) return;
       addWaypointBetween(pendingClickLatLng.lat, pendingClickLatLng.lng);
       map.closePopup();
       pendingClickLatLng = null;
+      calculateRoute();
     }
 
     // Retrait d'un point déjà posé (départ, arrivée ou étape), depuis sa
@@ -2031,6 +2037,7 @@
       const idx = routeWaypoints.findIndex(w => w.id === id);
       if (idx !== -1) removeRouteWaypoint(idx);
       map.closePopup();
+      calculateRoute();
     }
 
     map.on('click', function (e) {
@@ -2040,6 +2047,7 @@
 
     routeUndoBtn.addEventListener('click', function () {
       if (routeWaypoints.length > 0) removeRouteWaypoint(routeWaypoints.length - 1);
+      calculateRoute();
     });
     routeClearBtn.addEventListener('click', clearRouteBuildState);
 
@@ -2058,21 +2066,28 @@
       return profile;
     }
 
+    const BROUTER_MAX_ATTEMPTS = 6;
+
     // "operation killed by thread-priority-watchdog" est un raté connu et
     // documenté du serveur public BRouter (voir issue #423 du dépôt
     // brouter-web) — un raté ponctuel lié à la charge du serveur communautaire
-    // à un instant donné, pas à la trace demandée ni au profil choisi. Une
-    // nouvelle tentative quelques secondes après suffit généralement.
+    // à un instant donné, pas à la trace demandée ni au profil choisi.
+    // Nouvelle tentative immédiate (pas d'attente artificielle) jusqu'à
+    // BROUTER_MAX_ATTEMPTS fois — toute autre erreur (400, itinéraire
+    // introuvable...) part immédiatement sans réessayer, ça ne réglerait rien.
     async function calculateBRouterRouteWithRetry(waypoints, profile, onRetry) {
-      try {
-        return await calculateBRouterRoute(waypoints, profile);
-      } catch (err) {
-        if (!/thread-priority-watchdog/i.test(err.message)) throw err;
-        console.warn('[brouter] raté ponctuel du serveur public, nouvelle tentative dans 3s…');
-        if (onRetry) onRetry();
-        await new Promise(r => setTimeout(r, 3000));
-        return calculateBRouterRoute(waypoints, profile);
+      let lastErr = null;
+      for (let attempt = 1; attempt <= BROUTER_MAX_ATTEMPTS; attempt++) {
+        try {
+          return await calculateBRouterRoute(waypoints, profile);
+        } catch (err) {
+          lastErr = err;
+          if (!/thread-priority-watchdog/i.test(err.message)) throw err;
+          console.warn(`[brouter] raté ponctuel du serveur public (tentative ${attempt}/${BROUTER_MAX_ATTEMPTS})…`);
+          if (attempt < BROUTER_MAX_ATTEMPTS && onRetry) onRetry(attempt, BROUTER_MAX_ATTEMPTS);
+        }
       }
+      throw lastErr;
     }
 
     async function calculateBRouterRoute(waypoints, profile) {
@@ -2110,7 +2125,7 @@
       return feature;
     }
 
-    routeCalculateBtn.addEventListener('click', async function () {
+    async function calculateRoute() {
       if (routeWaypoints.length < 2) return;
       routeCalculateBtn.disabled = true;
       routeCalcStatusEl.textContent = 'Calcul de l\'itinéraire…';
@@ -2119,7 +2134,7 @@
       try {
         const profile = brouterProfileSelect.value;
         const feature = await calculateBRouterRouteWithRetry(routeWaypoints, profile,
-          () => { routeCalcStatusEl.textContent = 'Raté ponctuel du serveur, nouvelle tentative…'; });
+          (attempt, max) => { routeCalcStatusEl.textContent = `Raté ponctuel du serveur, nouvelle tentative (${attempt + 1}/${max})…`; });
         const coords3d = feature.geometry.coordinates; // [lon, lat, ele?] par point
 
         const line = turf.lineString(coords3d.map(c => [c[0], c[1]]));
@@ -2154,7 +2169,9 @@
       } finally {
         routeCalculateBtn.disabled = routeWaypoints.length < 2;
       }
-    });
+    }
+
+    routeCalculateBtn.addEventListener('click', calculateRoute);
 
     // Ma position — même logique qu'EasyBiv (GPS indépendant du réseau)
     // =========================================================
@@ -2743,6 +2760,36 @@
     // générique /placeOfInterest, filtré côté client par type ensuite).
     // =========================================================
     const DATATOURISME_BASE = 'https://api.datatourisme.fr/v1/placeOfInterest';
+    // Politique d'usage documentée : ~10 requêtes/seconde en continu, 1000/h
+    // — largement suffisant pour un parcours séquentiel des pages d'une
+    // seule zone de carte, pas besoin de paralléliser.
+    const DATATOURISME_MAX_PAGES = 20; // garde-fou (jusqu'à 2000 lieux) contre une zone démesurément large
+
+    // Récupère TOUTES les pages de résultats, pas seulement la première —
+    // avant ce correctif, une zone avec plus de 100 lieux (page_size) en
+    // perdait silencieusement une partie, sans que rien ne le signale.
+    // Suit meta.next tel que renvoyé par l'API plutôt que de reconstruire
+    // l'URL de la page suivante nous-mêmes (dont le nom exact du paramètre
+    // n'est pas garanti, alors que meta.next est une URL prête à l'emploi).
+    async function fetchAllDataTourismeObjects(firstUrl, apiKey) {
+      let allObjects = [];
+      let url = firstUrl;
+      let pagesFetched = 0;
+
+      while (url && pagesFetched < DATATOURISME_MAX_PAGES) {
+        pagesFetched++;
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
+        const response = await fetch(url, { headers: { 'X-API-Key': apiKey }, signal: controller.signal })
+          .finally(() => clearTimeout(timeoutId));
+        if (!response.ok) throw new Error(`HTTP ${response.status} (page ${pagesFetched})`);
+        const data = await response.json();
+        allObjects = allObjects.concat(data.objects || []);
+        url = (data.meta && data.meta.next) || null;
+      }
+
+      return { objects: allObjects, truncated: !!url, pagesFetched: pagesFetched };
+    }
     const MIN_ZOOM_HEBERGEMENTS = 12;
     const DATATOURISME_KEY_STORAGE = 'cyclotrip_datatourisme_key';
     // ⚠️ Clé de test en dur pour cette phase de proto — RETIRER avant tout
@@ -2965,13 +3012,7 @@
         // doc officielle — pas de repli proxy fiable ici, un proxy CORS
         // public générique ne relaie généralement pas les en-têtes
         // personnalisés.
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000);
-        const response = await fetch(url, { headers: { 'X-API-Key': apiKey }, signal: controller.signal })
-          .finally(() => clearTimeout(timeoutId));
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const data = await response.json();
-        const objects = data.objects || [];
+        const { objects, truncated, pagesFetched } = await fetchAllDataTourismeObjects(url, apiKey);
         // Mémorise chaque POI par uuid — permet de le retrouver depuis le
         // bouton "Assigner à ce jour" d'une popup sans tout resérialiser.
         objects.forEach(function (poi) { if (poi.uuid) poiCache.set(poi.uuid, poi); });
@@ -3026,6 +3067,8 @@
         if (wantHebergements) parts.push(`${shownHebergements} hébergement(s)`);
         if (wantRestaurants) parts.push(`${shownRestaurants} restaurant(s)`);
         let statusMsg = `${parts.join(', ')} affiché(s) (sur ${objects.length} lieu(x) reçu(s) dans la zone).`;
+        if (pagesFetched > 1) statusMsg += ` (${pagesFetched} pages parcourues)`;
+        if (truncated) statusMsg += ` ⚠️ Zone très dense, résultats limités aux ${DATATOURISME_MAX_PAGES} premières pages — zoome pour affiner.`;
         if (unclassified.length > 0) statusMsg += ` ${unclassified.length} non reconnu(s) — détail en console.`;
         hebergementsStatusEl.textContent = statusMsg;
       } catch (err) {
@@ -3131,13 +3174,7 @@
       const url = `${DATATOURISME_BASE}?geo_bounding=${encodeURIComponent(geoBounding)}&page_size=250` +
         `&fields=uuid,label,type,isLocatedAt.geo,isLocatedAt.address`;
 
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 12000);
-      const response = await fetch(url, { headers: { 'X-API-Key': apiKey }, signal: controller.signal })
-        .finally(() => clearTimeout(timeoutId));
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const data = await response.json();
-      const objects = data.objects || [];
+      const { objects } = await fetchAllDataTourismeObjects(url, apiKey);
 
       const candidates = [];
       objects.filter(isAccommodationType).forEach(function (poi) {
@@ -4077,24 +4114,17 @@
           const geoBounding = `${north},${west},${south},${east}`;
           const url = `${DATATOURISME_BASE}?geo_bounding=${encodeURIComponent(geoBounding)}&page_size=100` +
             `&fields=uuid,label,type,isLocatedAt.geo,isLocatedAt.address`;
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 12000);
-          const response = await fetch(url, { headers: { 'X-API-Key': apiKey }, signal: controller.signal })
-            .finally(() => clearTimeout(timeoutId));
-          if (response.ok) {
-            const data = await response.json();
-            const objects = data.objects || [];
-            objects.filter(isAccommodationType).forEach(function (poi) {
-              const latlon = extractLatLonFromPoi(poi);
-              if (!latlon) return;
-              points.push({ category: 'hebergement', name: poiLabel(poi), lat: latlon.lat, lon: latlon.lon, detail: poiAddressLine(poi) || 'Hébergement' });
-            });
-            objects.filter(isFoodType).forEach(function (poi) {
-              const latlon = extractLatLonFromPoi(poi);
-              if (!latlon) return;
-              points.push({ category: 'restaurant', name: poiLabel(poi), lat: latlon.lat, lon: latlon.lon, detail: restaurantTypeLabel(poi) });
-            });
-          }
+          const { objects } = await fetchAllDataTourismeObjects(url, apiKey);
+          objects.filter(isAccommodationType).forEach(function (poi) {
+            const latlon = extractLatLonFromPoi(poi);
+            if (!latlon) return;
+            points.push({ category: 'hebergement', name: poiLabel(poi), lat: latlon.lat, lon: latlon.lon, detail: poiAddressLine(poi) || 'Hébergement' });
+          });
+          objects.filter(isFoodType).forEach(function (poi) {
+            const latlon = extractLatLonFromPoi(poi);
+            if (!latlon) return;
+            points.push({ category: 'restaurant', name: poiLabel(poi), lat: latlon.lat, lon: latlon.lon, detail: restaurantTypeLabel(poi) });
+          });
         } catch (err) {
           console.warn('[offline] DATAtourisme indisponible pour le corridor —', err.message);
         }
