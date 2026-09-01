@@ -358,7 +358,7 @@
       display: flex; align-items: center; justify-content: space-between;
       padding: 12px 4px; border-bottom: 1px solid var(--border); margin-bottom: 4px;
     }
-    .master-toggle-row span { font-size: 13.5px; font-weight: 700; }
+    .master-toggle-row span:not(.panel-eyebrow) { font-size: 13.5px; font-weight: 700; }
 
     /* Interrupteur simple */
     .switch { position: relative; width: 42px; height: 24px; flex-shrink: 0; }
@@ -377,6 +377,49 @@
 
     .field-label { font-size: 12px; font-weight: 700; color: var(--ink-soft); margin: 12px 0 6px; display: block; }
     .field-label-optional { font-weight: 400; color: var(--ink-faint); text-transform: none; letter-spacing: 0; }
+
+    .custom-select { position: relative; }
+    .custom-select-trigger {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 11px 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      font-family: inherit;
+      color: var(--ink);
+      cursor: pointer;
+      text-align: left;
+    }
+    .custom-select-trigger svg { width: 16px; height: 16px; flex-shrink: 0; color: var(--ink-faint); transition: transform 0.15s; }
+    .custom-select.open .custom-select-trigger svg { transform: rotate(180deg); }
+    .custom-select-options {
+      display: none;
+      position: absolute;
+      left: 0; right: 0; top: 100%;
+      z-index: 60;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-float);
+      max-height: 260px;
+      overflow-y: auto;
+      margin-top: 2px;
+    }
+    .custom-select.open .custom-select-options { display: block; }
+    .custom-select-option {
+      padding: 11px 14px;
+      font-size: 12.5px;
+      cursor: pointer;
+      border-bottom: 1px solid var(--border);
+    }
+    .custom-select-option:last-child { border-bottom: none; }
+    .custom-select-option:hover, .custom-select-option:active { background: var(--bg-app); }
+    .custom-select-option.selected { color: var(--brand-dark); font-weight: 700; background: #EAF3EC; }
 
     .place-field-wrap { position: relative; }
     .place-suggestions {
@@ -634,7 +677,7 @@
     <button id="btn-otm">OpenTopo</button>
   </div>
 
-  <div id="app-version">build 2026-08-27-38 — noms de lieux affichés dans la liste, effacés au déplacement</div>
+  <div id="app-version">build 2026-08-27-40 — nouvelle tentative auto sur raté ponctuel du serveur BRouter</div>
 
   <div id="elevation-panel">
     <div id="elevation-panel-header">
@@ -699,17 +742,23 @@
         </div>
         <div id="place-search-status" class="status-text"></div>
 
-        <label class="field-label" for="brouter-profile" style="margin-top:6px;">Profil de routage</label>
-        <select id="brouter-profile" class="text-input">
-          <option value="trekking" selected>Trekking (polyvalent)</option>
-          <option value="fastbike">Route rapide (revêtu, type route)</option>
-          <option value="safety">Sécurisé (évite les grands axes)</option>
-          <option value="shortest">Le plus court</option>
-          <option value="trekking-steep">Trekking (fortes pentes acceptées)</option>
-          <option value="trekking-noferries">Trekking (sans ferry)</option>
-          <option value="trekking-nosteps">Trekking (sans escaliers/portage)</option>
-          <option value="trekking-ignore-cr">Trekking (ignore les itinéraires cyclables balisés)</option>
-        </select>
+        <label class="field-label" for="brouter-profile-trigger" style="margin-top:6px;">Profil de routage</label>
+        <div class="custom-select" id="brouter-profile-wrap">
+          <button type="button" class="custom-select-trigger" id="brouter-profile-trigger">
+            <span id="brouter-profile-current-label">Trekking (polyvalent)</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </button>
+          <div class="custom-select-options" id="brouter-profile-options">
+            <div class="custom-select-option selected" data-value="trekking">Trekking (polyvalent)</div>
+            <div class="custom-select-option" data-value="fastbike">Route rapide (revêtu, type route)</div>
+            <div class="custom-select-option" data-value="safety">Sécurisé (évite les grands axes)</div>
+            <div class="custom-select-option" data-value="shortest">Le plus court</div>
+            <div class="custom-select-option" data-value="trekking-steep">Trekking (fortes pentes acceptées)</div>
+            <div class="custom-select-option" data-value="trekking-noferries">Trekking (sans ferry)</div>
+            <div class="custom-select-option" data-value="trekking-nosteps">Trekking (sans escaliers/portage)</div>
+            <div class="custom-select-option" data-value="trekking-ignore-cr">Trekking (ignore les itinéraires cyclables balisés)</div>
+          </div>
+        </div>
 
         <div id="route-waypoints-status" class="status-text">Aucun point placé.</div>
         <div id="route-waypoints-list"></div>
@@ -786,7 +835,21 @@
       <h3 class="sheet-title">Points d'intérêt</h3>
       <p class="sheet-subtitle">Coche les types à afficher — zoome sur la carte pour charger les points.</p>
 
-      <span class="panel-eyebrow" style="display:block;">🚴 Vélo</span>
+      <div class="master-toggle-row" style="margin-top:4px;">
+        <span><b>Afficher les points d'intérêt</b></span>
+        <label class="switch">
+          <input type="checkbox" id="toggle-poi-master" checked />
+          <span class="switch-track"></span>
+        </label>
+      </div>
+
+      <div class="master-toggle-row" style="margin-top:14px;">
+        <span class="panel-eyebrow" style="margin:0;">🚴 Vélo</span>
+        <label class="switch">
+          <input type="checkbox" id="toggle-group-velo" checked />
+          <span class="switch-track"></span>
+        </label>
+      </div>
       <div class="chip-row" id="ateliers-filters">
         <label><input type="checkbox" class="ateliers-filter" value="shop" checked /><span class="chip-dot" style="background:#2E7D32"></span>Magasins vélo</label>
         <label><input type="checkbox" class="ateliers-filter" value="repair" checked /><span class="chip-dot" style="background:#F57F17"></span>Stations de réparation</label>
@@ -796,13 +859,25 @@
       </div>
       <div id="ateliers-status" class="status-text">Zoome pour charger les points (niveau 13+)</div>
 
-      <span class="panel-eyebrow" style="display:block; margin-top:16px;">💧 Eau</span>
+      <div class="master-toggle-row" style="margin-top:16px;">
+        <span class="panel-eyebrow" style="margin:0;">💧 Eau</span>
+        <label class="switch">
+          <input type="checkbox" id="toggle-group-eau" checked />
+          <span class="switch-track"></span>
+        </label>
+      </div>
       <div class="chip-row">
         <label><input type="checkbox" id="toggle-eau" checked /><span class="chip-dot" style="background:#1E88E5"></span>Points d'eau</label>
       </div>
       <div id="eau-status" class="status-text">Zoome pour charger les points (niveau 13+)</div>
 
-      <span class="panel-eyebrow" style="display:block; margin-top:16px;">🏨 Hébergement &amp; restauration</span>
+      <div class="master-toggle-row" style="margin-top:16px;">
+        <span class="panel-eyebrow" style="margin:0;">🏨 Hébergement &amp; restauration</span>
+        <label class="switch">
+          <input type="checkbox" id="toggle-group-hebergement-restau" checked />
+          <span class="switch-track"></span>
+        </label>
+      </div>
       <div class="chip-row">
         <label><input type="checkbox" id="toggle-hebergements" checked /><span class="chip-dot" style="background:#8E24AA"></span>Hébergements</label>
         <label><input type="checkbox" id="toggle-restaurants" checked /><span class="chip-dot" style="background:#D62828"></span>Restaurants</label>
@@ -1542,7 +1617,44 @@
     const traceModeImportBtn = document.getElementById('trace-mode-import-btn');
     const traceBuildSection = document.getElementById('trace-build-section');
     const traceImportSection = document.getElementById('trace-import-section');
-    const brouterProfileSelect = document.getElementById('brouter-profile');
+    const brouterProfileSelect = { value: 'trekking', label: 'Trekking (polyvalent)' };
+
+    // Dropdown interne à l'app, indépendant du composant natif du système
+    // (dont le rendu — police, taille, présentation — échappe totalement à
+    // notre contrôle et détonne visuellement sur Android). Comportement
+    // minimal volontaire : ouverture/fermeture au clic, sélection, fermeture
+    // au clic extérieur — pas besoin de plus pour un menu à choix unique.
+    function setupCustomSelect(wrapId, triggerId, optionsId, currentLabelId, onChange) {
+      const wrap = document.getElementById(wrapId);
+      const trigger = document.getElementById(triggerId);
+      const optionsEl = document.getElementById(optionsId);
+      const currentLabelEl = document.getElementById(currentLabelId);
+
+      function close() { wrap.classList.remove('open'); }
+      function open() { wrap.classList.add('open'); }
+
+      trigger.addEventListener('click', function (e) {
+        e.stopPropagation();
+        if (wrap.classList.contains('open')) close(); else open();
+      });
+
+      optionsEl.querySelectorAll('.custom-select-option').forEach(function (opt) {
+        opt.addEventListener('click', function () {
+          optionsEl.querySelectorAll('.custom-select-option').forEach(o => o.classList.remove('selected'));
+          opt.classList.add('selected');
+          currentLabelEl.textContent = opt.textContent;
+          close();
+          onChange(opt.dataset.value, opt.textContent);
+        });
+      });
+
+      document.addEventListener('click', function (e) {
+        if (!wrap.contains(e.target)) close();
+      });
+    }
+
+    setupCustomSelect('brouter-profile-wrap', 'brouter-profile-trigger', 'brouter-profile-options', 'brouter-profile-current-label',
+      function (value, label) { brouterProfileSelect.value = value; brouterProfileSelect.label = label; });
     const routeWaypointsStatusEl = document.getElementById('route-waypoints-status');
     const placeSearchStatusEl = document.getElementById('place-search-status');
     const placeInputDepart = document.getElementById('place-input-depart');
@@ -1621,6 +1733,8 @@
     // atIndex optionnel : position d'insertion (par défaut, ajout en fin).
     // Utilisé par addWaypointBetween() pour insérer une étape avant
     // l'arrivée plutôt qu'après.
+    let nextWaypointId = 1;
+
     function addRouteWaypoint(lat, lon, atIndex, role, label) {
       const insertAt = (atIndex === undefined || atIndex === null) ? routeWaypoints.length : atIndex;
 
@@ -1632,7 +1746,23 @@
         icon: waypointIconFor(insertAt, routeWaypoints.length + 1)
       }).addTo(routeWaypointsLayer);
 
-      const wp = { lat: lat, lon: lon, marker: marker, role: role || null, label: label || null };
+      const wp = { id: nextWaypointId++, lat: lat, lon: lon, marker: marker, role: role || null, label: label || null };
+
+      // Bulle de retrait — contenu recalculé à l'ouverture (pas figé à la
+      // création) pour refléter le rôle/index courants, qui peuvent changer
+      // si d'autres points sont ajoutés ou retirés ensuite.
+      marker.on('click', function (e) {
+        const idx = routeWaypoints.findIndex(w => w.id === wp.id);
+        if (idx === -1) return;
+        const roleLabel = waypointLabel(idx, routeWaypoints.length);
+        const locationText = routeWaypoints[idx].label || `${routeWaypoints[idx].lat.toFixed(4)}, ${routeWaypoints[idx].lon.toFixed(4)}`;
+        const html = `<div class="poi-popup">` +
+          `<h4>${escapeHtml(roleLabel)}</h4>` +
+          `<p>${escapeHtml(locationText)}</p>` +
+          `<button class="popup-assign-btn" onclick="removeRouteWaypointById(${wp.id})">✕ Retirer ce point</button>` +
+          `</div>`;
+        L.popup().setLatLng(e.latlng).setContent(html).openOn(map);
+      });
 
       // Pendant le glissement, on met à jour les coordonnées mémorisées mais
       // PAS la liste HTML : la reconstruire (innerHTML + réattachement des
@@ -1854,9 +1984,58 @@
     // point silencieusement — très gênant au doigt sur mobile.
     // La feuille peut être fermée (activePanel reste 'trace') : c'est même
     // le mode d'usage naturel sur mobile, où la feuille masque la carte.
+    //
+    // Le clic sur la carte ouvre une bulle de choix plutôt que de créer un
+    // point directement — évite les points ajoutés par erreur (ex. un clic
+    // pour juste zoomer/regarder) et laisse le rôle explicite à
+    // l'utilisateur, cohérent avec le modèle Départ/Arrivée/Étape.
+    let pendingClickLatLng = null;
+
+    function openRouteClickPopup(latlng) {
+      pendingClickLatLng = latlng;
+      const html = `<div class="poi-popup">` +
+        `<h4>Nouveau point</h4>` +
+        `<button class="popup-assign-btn" onclick="setDepartureFromClickPopup()">📍 Définir comme départ</button>` +
+        `<button class="popup-assign-btn" onclick="setArrivalFromClickPopup()">🏁 Définir comme arrivée</button>` +
+        `<button class="popup-assign-btn" onclick="addWaypointFromClickPopup()">+ Définir comme étape</button>` +
+        `</div>`;
+      L.popup().setLatLng(latlng).setContent(html).openOn(map);
+    }
+
+    // Fonctions globales (pas des const) : appelées depuis les attributs
+    // onclick du HTML de popup, même schéma que assignHebergementToSelectedDay
+    // plus haut dans ce fichier.
+    function setDepartureFromClickPopup() {
+      if (!pendingClickLatLng) return;
+      setDeparture(pendingClickLatLng.lat, pendingClickLatLng.lng);
+      map.closePopup();
+      pendingClickLatLng = null;
+    }
+    function setArrivalFromClickPopup() {
+      if (!pendingClickLatLng) return;
+      setArrival(pendingClickLatLng.lat, pendingClickLatLng.lng);
+      map.closePopup();
+      pendingClickLatLng = null;
+    }
+    function addWaypointFromClickPopup() {
+      if (!pendingClickLatLng) return;
+      addWaypointBetween(pendingClickLatLng.lat, pendingClickLatLng.lng);
+      map.closePopup();
+      pendingClickLatLng = null;
+    }
+
+    // Retrait d'un point déjà posé (départ, arrivée ou étape), depuis sa
+    // propre bulle — recherché par id stable, jamais par index : l'index
+    // d'un point peut changer si d'autres sont insérés avant lui.
+    function removeRouteWaypointById(id) {
+      const idx = routeWaypoints.findIndex(w => w.id === id);
+      if (idx !== -1) removeRouteWaypoint(idx);
+      map.closePopup();
+    }
+
     map.on('click', function (e) {
       if (!routeBuildingActive || activePanel !== 'trace') return;
-      addWaypointBetween(e.latlng.lat, e.latlng.lng);
+      openRouteClickPopup(e.latlng);
     });
 
     routeUndoBtn.addEventListener('click', function () {
@@ -1879,11 +2058,41 @@
       return profile;
     }
 
+    // "operation killed by thread-priority-watchdog" est un raté connu et
+    // documenté du serveur public BRouter (voir issue #423 du dépôt
+    // brouter-web) — un raté ponctuel lié à la charge du serveur communautaire
+    // à un instant donné, pas à la trace demandée ni au profil choisi. Une
+    // nouvelle tentative quelques secondes après suffit généralement.
+    async function calculateBRouterRouteWithRetry(waypoints, profile, onRetry) {
+      try {
+        return await calculateBRouterRoute(waypoints, profile);
+      } catch (err) {
+        if (!/thread-priority-watchdog/i.test(err.message)) throw err;
+        console.warn('[brouter] raté ponctuel du serveur public, nouvelle tentative dans 3s…');
+        if (onRetry) onRetry();
+        await new Promise(r => setTimeout(r, 3000));
+        return calculateBRouterRoute(waypoints, profile);
+      }
+    }
+
     async function calculateBRouterRoute(waypoints, profile) {
       const lonlats = waypoints.map(w => `${w.lon.toFixed(6)},${w.lat.toFixed(6)}`).join('|');
       const url = `${BROUTER_BASE}?lonlats=${lonlats}&profile=${encodeURIComponent(profile)}&alternativeidx=0&format=geojson`;
+      console.log('[brouter] requête', url);
       const response = await fetchWithTimeout(url, BROUTER_TIMEOUT_MS);
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+      if (!response.ok) {
+        // Ne pas se contenter du code HTTP : BRouter renvoie généralement
+        // un message texte expliquant la cause réelle (points trop proches,
+        // hors couverture, profil incompatible...) dans le corps de la
+        // réponse — le jeter comme avant masquait complètement la raison.
+        let bodyText = '';
+        try { bodyText = await response.text(); } catch (e) { /* corps illisible, tant pis */ }
+        console.error('[brouter] échec HTTP', response.status, '— corps de la réponse :', bodyText);
+        const detail = bodyText && bodyText.length < 300 ? ` — ${bodyText.trim()}` : '';
+        throw new Error(`HTTP ${response.status}${detail}`);
+      }
+
       const data = await response.json();
 
       // Défensif : je n'ai pas pu vérifier avec certitude la présence
@@ -1909,7 +2118,8 @@
 
       try {
         const profile = brouterProfileSelect.value;
-        const feature = await calculateBRouterRoute(routeWaypoints, profile);
+        const feature = await calculateBRouterRouteWithRetry(routeWaypoints, profile,
+          () => { routeCalcStatusEl.textContent = 'Raté ponctuel du serveur, nouvelle tentative…'; });
         const coords3d = feature.geometry.coordinates; // [lon, lat, ele?] par point
 
         const line = turf.lineString(coords3d.map(c => [c[0], c[1]]));
@@ -1923,7 +2133,7 @@
             if (d > 0) elevGainM += d;
           }
         }
-        const profileLabel = brouterProfileSelect.options[brouterProfileSelect.selectedIndex].text;
+        const profileLabel = brouterProfileSelect.label;
 
         const latlngs = coords3d.map(c => [c[1], c[0]]);
         L.polyline(latlngs, { color: '#E91E63', weight: 4, opacity: 0.9 }).addTo(routePreviewLayer);
@@ -2016,6 +2226,26 @@
     const POI_TILES_BASE = 'data/tiles';
 
     const ateliersFilterEls = Array.from(document.querySelectorAll('.ateliers-filter'));
+
+    // Interrupteurs maîtres — un global (tout masquer d'un coup) et un par
+    // catégorie, en plus des puces existantes déjà plus fines. Masquent la
+    // couche carte sans toucher à l'état des puces, pour retrouver la même
+    // sélection en les rallumant.
+    const togglePoiMaster = document.getElementById('toggle-poi-master');
+    const toggleGroupVelo = document.getElementById('toggle-group-velo');
+    const toggleGroupEau = document.getElementById('toggle-group-eau');
+    const toggleGroupHebergementRestau = document.getElementById('toggle-group-hebergement-restau');
+
+    togglePoiMaster.addEventListener('change', function () {
+      refreshAteliersLayer(); refreshEauLayer(); refreshDataTourismeLayers();
+    });
+    toggleGroupVelo.addEventListener('change', refreshAteliersLayer);
+    toggleGroupEau.addEventListener('change', refreshEauLayer);
+    toggleGroupHebergementRestau.addEventListener('change', function () {
+      // Affecte aussi la couche ateliers : la boulangerie y est rattachée
+      // techniquement (voir commentaire dans refreshAteliersLayer).
+      refreshDataTourismeLayers(); refreshAteliersLayer();
+    });
     const ateliersStatusEl = document.getElementById('ateliers-status');
     const ateliersLayer = L.layerGroup().addTo(map);
 
@@ -2204,6 +2434,10 @@
     // switch maître séparé, simplifié à la demande (une seule façon de
     // choisir quoi afficher, pas deux superposées).
     async function refreshAteliersLayer() {
+      if (!togglePoiMaster.checked || !toggleGroupVelo.checked) {
+        if (map.hasLayer(ateliersLayer)) map.removeLayer(ateliersLayer);
+        return;
+      }
       if (!map.hasLayer(ateliersLayer)) map.addLayer(ateliersLayer);
 
       if (map.getZoom() < MIN_ZOOM_POI) {
@@ -2229,6 +2463,12 @@
         let shown = 0;
         poiFeatures.forEach(function (f) {
           if (!activeFilters.has(f.props.category)) return;
+          // Cas particulier : la boulangerie est affichée dans le groupe
+          // visuel "Hébergement & restauration", mais alimentée par ce même
+          // système de tuiles que les ateliers vélo (même couche de
+          // données). Son propre interrupteur de groupe s'applique donc ici,
+          // en plus du filtre normal par catégorie.
+          if (f.props.category === 'bakery' && !toggleGroupHebergementRestau.checked) return;
           if (!currentBounds.contains([f.lat, f.lon])) return;
           const style = POI_CATEGORY_STYLE[f.props.category] || { color: '#777' };
           L.circleMarker([f.lat, f.lon], { radius: 8, fillColor: style.color, color: '#fff', weight: 2, fillOpacity: 0.95 })
@@ -2267,7 +2507,7 @@
     let eauCache = null; // { bounds, signature } — signature fixe ici, pas de filtres pour cette couche
 
     async function refreshEauLayer() {
-      if (!toggleEau.checked) {
+      if (!togglePoiMaster.checked || !toggleGroupEau.checked || !toggleEau.checked) {
         if (map.hasLayer(eauLayer)) map.removeLayer(eauLayer);
         return;
       }
@@ -2697,6 +2937,8 @@
       hebergementsLayer.clearLayers();
       restaurantsLayer.clearLayers();
 
+      if (!togglePoiMaster.checked || !toggleGroupHebergementRestau.checked) return;
+
       const wantHebergements = toggleHebergements.checked;
       const wantRestaurants = toggleRestaurants.checked;
       if (!wantHebergements && !wantRestaurants) return;
@@ -2736,6 +2978,7 @@
 
         let shownHebergements = 0;
         let shownRestaurants = 0;
+        const unclassified = []; // lieux reçus mais rattachés à aucune des deux catégories connues
 
         if (wantHebergements) {
           objects.filter(isAccommodationType).forEach(function (poi) {
@@ -2763,10 +3006,28 @@
           });
         }
 
+        // Diagnostic : la classification hébergement/restaurant repose sur
+        // une liste de types observés sur un échantillon limité — un lieu
+        // reçu mais catégorisé "autre chose" côté DATAtourisme n'apparaît
+        // dans aucune des deux couches, silencieusement. Plutôt que de
+        // deviner d'autres valeurs de type sans avoir pu tester contre de
+        // vraies données, on journalise ici les types réels rencontrés —
+        // à inspecter dans la console si le compte affiché semble bas.
+        objects.forEach(function (poi) {
+          if (!isAccommodationType(poi) && !isFoodType(poi)) {
+            unclassified.push({ uuid: poi.uuid, label: poiLabel(poi), type: poi.type });
+          }
+        });
+        if (unclassified.length > 0) {
+          console.log(`[datatourisme] ${unclassified.length} lieu(x) reçu(s) mais non classé(s) hébergement/restaurant — types observés :`, unclassified);
+        }
+
         const parts = [];
         if (wantHebergements) parts.push(`${shownHebergements} hébergement(s)`);
         if (wantRestaurants) parts.push(`${shownRestaurants} restaurant(s)`);
-        hebergementsStatusEl.textContent = `${parts.join(', ')} affiché(s) (sur ${objects.length} lieu(x) reçu(s) dans la zone).`;
+        let statusMsg = `${parts.join(', ')} affiché(s) (sur ${objects.length} lieu(x) reçu(s) dans la zone).`;
+        if (unclassified.length > 0) statusMsg += ` ${unclassified.length} non reconnu(s) — détail en console.`;
+        hebergementsStatusEl.textContent = statusMsg;
       } catch (err) {
         console.error('[datatourisme] erreur', err);
         hebergementsStatusEl.textContent = `Erreur : ${err.message} (vérifie ta clé API)`;
