@@ -226,6 +226,41 @@
       z-index: 1500;
     }
     #lodging-picker-overlay.open { display: block; }
+
+    /* ---------- Popup de bienvenue ---------- */
+    #welcome-overlay {
+      display: none;
+      position: absolute; inset: 0;
+      background: rgba(20,24,26,0.6);
+      z-index: 1600;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    #welcome-overlay.open { display: flex; }
+    #welcome-panel {
+      background: var(--surface);
+      border-radius: var(--radius-xl);
+      max-width: 440px;
+      max-height: 85vh;
+      overflow-y: auto;
+      padding: 24px 22px;
+      box-shadow: var(--shadow-float);
+    }
+    #welcome-panel h2 { font-size: 20px; font-weight: 800; margin: 0 0 4px; }
+    #welcome-panel h3 { font-size: 14px; font-weight: 800; margin: 18px 0 4px; color: var(--brand-dark); }
+    #welcome-panel p { font-size: 13px; line-height: 1.55; color: var(--ink-soft); margin: 0 0 4px; }
+    #welcome-panel .welcome-footer {
+      font-size: 12.5px; font-weight: 700; color: var(--ink);
+      margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border);
+    }
+    #welcome-close-btn {
+      width: 100%; margin-top: 18px;
+      background: var(--brand); color: white; border: none;
+      border-radius: var(--radius-lg); padding: 13px; font-size: 14px; font-weight: 800;
+      cursor: pointer;
+    }
     #lodging-picker-panel {
       display: none;
       position: absolute;
@@ -781,7 +816,8 @@
     <button id="btn-otm">OpenTopo</button>
   </div>
 
-  <div id="app-version">build 2026-08-27-40 — nouvelle tentative auto sur raté ponctuel du serveur BRouter</div>
+  <!-- build 2026-08-27-50 — repère de version interne, masqué pour le public -->
+  <div id="app-version" style="display:none;">build 2026-08-27-50</div>
 
   <div id="elevation-panel">
     <div id="elevation-panel-header">
@@ -957,7 +993,7 @@
       <div class="master-toggle-row" style="margin-top:4px;">
         <span><b>Afficher les points d'intérêt</b></span>
         <label class="switch">
-          <input type="checkbox" id="toggle-poi-master" checked />
+          <input type="checkbox" id="toggle-poi-master" />
           <span class="switch-track"></span>
         </label>
       </div>
@@ -999,16 +1035,13 @@
       </div>
       <div class="chip-row">
         <label><input type="checkbox" id="toggle-hebergements" checked /><span class="chip-dot" style="background:#8E24AA"></span>Hébergements</label>
+        <label><input type="checkbox" id="toggle-camping" checked /><span class="chip-dot" style="background:#00695C"></span>Camping</label>
         <label><input type="checkbox" id="toggle-restaurants" checked /><span class="chip-dot" style="background:#D62828"></span>Restaurants</label>
         <label><input type="checkbox" class="ateliers-filter" value="bakery" checked /><span class="chip-dot" style="background:#C2185B"></span>Boulangerie</label>
       </div>
-      <label class="field-label" for="datatourisme-key">Clé API DATAtourisme</label>
-      <input type="text" id="datatourisme-key" class="text-input" placeholder="Colle ta clé ici" />
-      <div class="api-key-note">
-        Gratuite sur simple inscription (nom, email) —
-        <a href="https://www.datatourisme.fr/utiliser-les-donnees" target="_blank" rel="noopener">demander une clé →</a>
-      </div>
-      <div class="api-key-saved-badge" id="api-key-saved-badge">✓ Clé enregistrée sur cet appareil</div>
+      <label class="field-label" for="datatourisme-key" style="display:none;">Clé API DATAtourisme</label>
+      <input type="text" id="datatourisme-key" class="text-input" style="display:none;" />
+      <div class="api-key-saved-badge" id="api-key-saved-badge" style="display:none;">✓ Clé enregistrée sur cet appareil</div>
       <div id="hebergements-status" class="status-text">Zoome pour charger les points (niveau 12+)</div>
 
       <div class="poi-section poi-section-last">
@@ -1027,8 +1060,9 @@
       <p class="sheet-subtitle">Découpe ton itinéraire en étapes quotidiennes, avec ou sans recherche d'hébergement.</p>
 
       <div id="dayplan-mode-select">
-        <button id="dayplan-mode-hebergements" class="dayplan-mode-btn">🏨 Hébergements</button>
-        <button id="dayplan-mode-libre" class="dayplan-mode-btn">🚴 Étapes libres</button>
+        <button id="dayplan-mode-libre" class="dayplan-mode-btn">🚴 Libre</button>
+        <button id="dayplan-mode-camping" class="dayplan-mode-btn">🏕️ Camping</button>
+        <button id="dayplan-mode-hebergements" class="dayplan-mode-btn">🏨 Hébergement</button>
       </div>
 
       <div id="dayplan-config" style="display:none;">
@@ -1104,6 +1138,36 @@
   </nav>
 
   <div id="lodging-picker-overlay"></div>
+
+  <div id="welcome-overlay">
+    <div id="welcome-panel">
+      <h2>Bienvenue sur CycloTrip !</h2>
+      <p><em>(toute proposition de nom est bienvenue 😉)</em></p>
+      <p>Une appli de planification vélo qui part d'un constat simple : la plupart des outils sont pensés pour enregistrer une sortie ou la partager, pas pour répondre à la question qui compte vraiment sur la route : qu'est-ce qu'il y a concrètement autour de moi, et comment m'organiser au mieux ?</p>
+
+      <h3>Créé ton itinéraire</h3>
+      <p>Trace directement sur la carte, avec de vrais profils de routage cyclable : évitement des grands axes, réseau cyclable balisé, route revêtue rapide, ou plusieurs variantes trekking selon ton terrain. Départ, arrivée et étapes intermédiaires se placent à la recherche ou au clic. L'import de GPX est possible si tu as déjà ta trace. Rien de nouveau comparé à Komoot pour le moment.</p>
+
+      <h3>Ce qui manque ailleurs : les infos pratiques le long de la route</h3>
+      <p>Magasins vélo, stations de réparation, gonflage, lavage, distributeurs de chambres à air, boulangeries et points d'eau. Tu peux les chercher le long de tout ton tracé ou choisir l'option "autour de moi".</p>
+
+      <h3>Multi-jours, avec un vrai choix d'hébergement</h3>
+      <p>Trois modes : libre (bivouac, tu places tes étapes toi-même), camping, ou hébergement classique (hôtels, gîtes). Pour chaque option, tu vois d'un coup d'œil la durée du jour qui y mène et le détour qu'elle représente.</p>
+
+      <h3>Météo qui colle à ta vitesse</h3>
+      <p>Prévision par créneau (1h à 6h ajustable), vitesse personnalisable, lieu de chaque prévision affiché.</p>
+
+      <h3>Mode Navigation</h3>
+      <p>Un écran dédié, sans carte, pensé pour rouler : km parcourus/restants, dénivelé fait/restant, prochain point d'eau ou atelier en avant et en arrière.</p>
+
+      <h3>Hors-ligne</h3>
+      <p>Télécharge un seul fichier autonome : carte, trace, tous les points d'intérêts, GPS compris.</p>
+
+      <p class="welcome-footer">Zéro compte, zéro tracking, zéro pub. Les données vélo viennent d'un pipeline auto-hébergé mis à jour chaque jour, indépendant des limites d'un service tiers.</p>
+
+      <button id="welcome-close-btn">Découvrir la carte →</button>
+    </div>
+  </div>
   <div id="lodging-picker-panel">
     <div class="lodging-picker-header">
       <span id="lodging-picker-title">Choisir un hébergement</span>
@@ -1158,6 +1222,20 @@
     // =========================================================
     // Carte de base
     // =========================================================
+    // Popup de bienvenue — affichée une seule fois, mémorisée sur l'appareil.
+    (function () {
+      const STORAGE_KEY = 'cyclotrip_welcome_seen';
+      const overlay = document.getElementById('welcome-overlay');
+      const closeBtn = document.getElementById('welcome-close-btn');
+      try {
+        if (!localStorage.getItem(STORAGE_KEY)) overlay.classList.add('open');
+      } catch (err) { /* stockage indisponible : popup non bloquante, tant pis */ }
+      closeBtn.addEventListener('click', function () {
+        overlay.classList.remove('open');
+        try { localStorage.setItem(STORAGE_KEY, '1'); } catch (err) { /* non bloquant */ }
+      });
+    })();
+
     const map = L.map('map', { zoomControl: false }).setView([45.188, 5.724], 13); // Grenoble par défaut
     L.control.zoom({ position: 'bottomleft' }).addTo(map);
 
@@ -1206,7 +1284,6 @@
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         return await response.json();
       } catch (directErr) {
-        console.warn('[fetch] échec direct, tentative via proxy CORS :', url, directErr.message);
         const proxiedUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
         // NB: un proxy public générique ne relaie pas forcément les en-têtes
         // personnalisés (ex. X-API-Key) — ce repli est donc surtout utile
@@ -2161,7 +2238,6 @@
             .then(results => renderResults(results, myGeneration))
             .catch(function (err) {
               if (myGeneration !== generation) return;
-              console.warn('[autocomplete] erreur', err.message);
               close();
             });
         }, AUTOCOMPLETE_DEBOUNCE_MS);
@@ -2338,6 +2414,8 @@
     // Nouvelle tentative immédiate (pas d'attente artificielle) jusqu'à
     // BROUTER_MAX_ATTEMPTS fois — toute autre erreur (400, itinéraire
     // introuvable...) part immédiatement sans réessayer, ça ne réglerait rien.
+    const BROUTER_RETRY_DELAY_MS = 1500; // pause volontaire avant un nouvel essai — semble améliorer les chances du suivant
+
     async function calculateBRouterRouteWithRetry(waypoints, profile, onRetry) {
       let lastErr = null;
       for (let attempt = 1; attempt <= BROUTER_MAX_ATTEMPTS; attempt++) {
@@ -2346,8 +2424,10 @@
         } catch (err) {
           lastErr = err;
           if (!/thread-priority-watchdog/i.test(err.message)) throw err;
-          console.warn(`[brouter] raté ponctuel du serveur public (tentative ${attempt}/${BROUTER_MAX_ATTEMPTS})…`);
-          if (attempt < BROUTER_MAX_ATTEMPTS && onRetry) onRetry(attempt, BROUTER_MAX_ATTEMPTS);
+          if (attempt < BROUTER_MAX_ATTEMPTS) {
+            if (onRetry) onRetry(attempt, BROUTER_MAX_ATTEMPTS);
+            await new Promise(r => setTimeout(r, BROUTER_RETRY_DELAY_MS));
+          }
         }
       }
       throw lastErr;
@@ -2356,7 +2436,6 @@
     async function calculateBRouterRoute(waypoints, profile) {
       const lonlats = waypoints.map(w => `${w.lon.toFixed(6)},${w.lat.toFixed(6)}`).join('|');
       const url = `${BROUTER_BASE}?lonlats=${lonlats}&profile=${encodeURIComponent(profile)}&alternativeidx=0&format=geojson`;
-      console.log('[brouter] requête', url);
       const response = await fetchWithTimeout(url, BROUTER_TIMEOUT_MS);
 
       if (!response.ok) {
@@ -2598,7 +2677,6 @@
           })
           .then(function (index) {
             poiTileIndex = new Set(index.tiles || []);
-            console.log(`[poi-tiles] index chargé — ${poiTileIndex.size} tuile(s) disponible(s), généré le ${index.generated_at}`);
             return poiTileIndex;
           })
           .catch(function (err) {
@@ -2640,7 +2718,6 @@
           // Pas d'ajout à poiLoadedTileIds : un prochain passage sur cette
           // zone retentera le chargement plutôt que de rester définitivement
           // vide suite à un simple accroc réseau ponctuel.
-          console.warn('[poi-tiles] échec chargement tuile', id, '—', err.message);
         })
         .finally(function () {
           poiTilesInFlight.delete(id);
@@ -2693,7 +2770,6 @@
 
       const selected = candidates.slice(0, maxTiles);
       if (candidates.length > selected.length) {
-        console.log(`[poi-tiles] ${candidates.length} tuiles candidates, limitées aux ${selected.length} plus proches`);
       }
       await runWithConcurrencyLimit(selected.map(id => () => loadPoiTile(id)), POI_TILE_CONCURRENCY);
     }
@@ -2737,7 +2813,7 @@
     // switch maître séparé, simplifié à la demande (une seule façon de
     // choisir quoi afficher, pas deux superposées).
     async function refreshAteliersLayer() {
-      if (!togglePoiMaster.checked || !toggleGroupVelo.checked) {
+      if (!togglePoiMaster.checked || !toggleGroupVelo.checked || dayplanFocusActive) {
         if (map.hasLayer(ateliersLayer)) map.removeLayer(ateliersLayer);
         return;
       }
@@ -2783,7 +2859,7 @@
         ateliersStatusEl.textContent = `${shown} point(s) affiché(s).`;
       } catch (err) {
         console.error('[ateliers] erreur', err);
-        ateliersStatusEl.textContent = `Erreur : ${err.message} (les données n'ont peut-être pas encore été générées — voir scripts/update_poi.py)`;
+        ateliersStatusEl.textContent = `Erreur : ${err.message}`;
       }
     }
 
@@ -2810,7 +2886,7 @@
     let eauCache = null; // { bounds, signature } — signature fixe ici, pas de filtres pour cette couche
 
     async function refreshEauLayer() {
-      if (!togglePoiMaster.checked || !toggleGroupEau.checked || !toggleEau.checked) {
+      if (!togglePoiMaster.checked || !toggleGroupEau.checked || !toggleEau.checked || dayplanFocusActive) {
         if (map.hasLayer(eauLayer)) map.removeLayer(eauLayer);
         return;
       }
@@ -2834,7 +2910,6 @@
       eauStatusEl.textContent = 'Chargement…';
       try {
         const data = await fetchJsonWithFallback(url);
-        console.log('[eau] réponse brute OpenDataSoft', data);
         const records = data.records || [];
 
         eauLayer.clearLayers();
@@ -2946,7 +3021,6 @@
           // ne cherche que les ateliers les plus proches.
           await ensureNearestPoiTilesLoaded(poiTileIdsForBounds(bounds), pos.lat, pos.lon, AROUND_ME_MAX_TILES_PER_STEP);
         } catch (err) {
-          console.warn('[around-me] chargement de tuiles incomplet —', err.message);
         }
 
         const matches = poiFeatures.filter(function (f) {
@@ -3081,28 +3155,30 @@
     // ⚠️ Clé de test en dur pour cette phase de proto — RETIRER avant tout
     // déploiement public/production (visible en clair par quiconque ouvre
     // le code source de la page).
-    const DEFAULT_DATATOURISME_KEY = '1d6280c7-7b69-47b4-9d68-8ed94af0a88f';
 
     const datatourismeKeyInput = document.getElementById('datatourisme-key');
     const apiKeySavedBadge = document.getElementById('api-key-saved-badge');
+    // Filet de secours silencieux, jamais affiché dans le champ ni dans
+    // l'UI — un visiteur sans clé personnelle peut quand même tester l'app.
+    const DEFAULT_DATATOURISME_KEY = '1d6280c7-7b69-47b4-9d68-8ed94af0a88f';
     const toggleHebergements = document.getElementById('toggle-hebergements');
+    const toggleCamping = document.getElementById('toggle-camping');
     const toggleRestaurants = document.getElementById('toggle-restaurants');
     const hebergementsStatusEl = document.getElementById('hebergements-status');
     const hebergementsLayer = L.layerGroup().addTo(map);
+    const campingLayer = L.layerGroup().addTo(map);
     const restaurantsLayer = L.layerGroup().addTo(map);
     const poiCache = new Map(); // uuid -> objet POI complet, pour l'assignation manuelle depuis une popup
 
-    // Charge la clé déjà enregistrée, sinon préremplit avec la clé de test
+    // Charge la clé déjà enregistrée, sinon laisse le champ vide
     try {
       const savedKey = localStorage.getItem(DATATOURISME_KEY_STORAGE);
       if (savedKey) {
         datatourismeKeyInput.value = savedKey;
         apiKeySavedBadge.style.display = 'block';
-      } else {
-        datatourismeKeyInput.value = DEFAULT_DATATOURISME_KEY;
       }
     } catch (err) {
-      datatourismeKeyInput.value = DEFAULT_DATATOURISME_KEY; // stockage indisponible, on retombe sur la clé de test
+      // stockage indisponible, champ laissé vide
     }
 
     datatourismeKeyInput.addEventListener('change', function () {
@@ -3129,6 +3205,25 @@
     function isAccommodationType(poi) {
       const types = poi && Array.isArray(poi.type) ? poi.type : [];
       return types.includes('Accommodation') || types.includes('LodgingBusiness');
+    }
+
+    // Distinction camping / hébergement "dur" — uniquement pour la
+    // planification multi-jours (3 modes : Libre, Camping, Hébergement).
+    // isAccommodationType reste inchangée pour ses autres usages (couche
+    // POI en direct, export hors-ligne), qui continuent de tout englober.
+    function isCampingType(poi) {
+      const types = poi && Array.isArray(poi.type) ? poi.type : [];
+      return types.includes('Camping') || types.includes('CampingAndCaravanning');
+    }
+    function isHardLodgingType(poi) {
+      return isAccommodationType(poi) && !isCampingType(poi);
+    }
+
+    // Camping et Hébergement partagent exactement le même mécanisme
+    // (recherche de candidats, nuits, sélecteur en liste) — seul le filtre
+    // de type change. Ce helper évite de répéter la condition partout.
+    function isLodgingDayplanMode() {
+      return dayplanMode === 'hebergements' || dayplanMode === 'camping';
     }
 
     // Même principe pour la restauration : "FoodEstablishment" est le tag
@@ -3215,7 +3310,7 @@
       // format hexadécimal/tirets attendu, pour écarter toute injection via
       // une valeur inattendue de l'API.
       const uuidIsSafe = typeof poi.uuid === 'string' && /^[A-Za-z0-9-]+$/.test(poi.uuid);
-      if (uuidIsSafe && selectedDayIndex !== null && dayplanMode === 'hebergements' &&
+      if (uuidIsSafe && selectedDayIndex !== null && isLodgingDayplanMode() &&
           selectedDayIndex < dayNightPoints.length) {
         html += `<button class="popup-assign-btn" onclick="assignHebergementToSelectedDay('${poi.uuid}')">` +
           `Assigner au jour ${selectedDayIndex + 1}</button>`;
@@ -3230,7 +3325,7 @@
     // logique de recalcul que le menu déroulant existant (redistribution
     // automatique des jours suivants).
     function assignHebergementToSelectedDay(uuid) {
-      if (selectedDayIndex === null || dayplanMode !== 'hebergements' || !currentTrackLine) return;
+      if (selectedDayIndex === null || !isLodgingDayplanMode() || !currentTrackLine) return;
 
       // Le dernier jour se termine à la fin de la trace, il n'a pas de nuit
       // à lui assigner : écrire dans dayNightPoints à cet index ajouterait
@@ -3268,13 +3363,19 @@
 
     async function refreshDataTourismeLayers() {
       hebergementsLayer.clearLayers();
+      campingLayer.clearLayers();
       restaurantsLayer.clearLayers();
 
+      // En focus plan multi-jours, seuls les hébergements retenus sont
+      // affichés (via dayplanHighlightLayer) — cette couche normale reste
+      // vide tant que ce mode est actif.
+      if (dayplanFocusActive) return;
       if (!togglePoiMaster.checked || !toggleGroupHebergementRestau.checked) return;
 
       const wantHebergements = toggleHebergements.checked;
+      const wantCamping = toggleCamping.checked;
       const wantRestaurants = toggleRestaurants.checked;
-      if (!wantHebergements && !wantRestaurants) return;
+      if (!wantHebergements && !wantCamping && !wantRestaurants) return;
 
       const apiKey = (localStorage.getItem(DATATOURISME_KEY_STORAGE) || datatourismeKeyInput.value || DEFAULT_DATATOURISME_KEY).trim();
       if (!apiKey) {
@@ -3304,11 +3405,12 @@
         objects.forEach(function (poi) { if (poi.uuid) poiCache.set(poi.uuid, poi); });
 
         let shownHebergements = 0;
+        let shownCamping = 0;
         let shownRestaurants = 0;
-        const unclassified = []; // lieux reçus mais rattachés à aucune des deux catégories connues
+        const unclassified = []; // lieux reçus mais rattachés à aucune des trois catégories connues
 
         if (wantHebergements) {
-          objects.filter(isAccommodationType).forEach(function (poi) {
+          objects.filter(isHardLodgingType).forEach(function (poi) {
             const latlon = extractLatLonFromPoi(poi);
             if (!latlon) return;
             const marker = L.circleMarker([latlon.lat, latlon.lon], { radius: 8, fillColor: '#8E24AA', color: '#fff', weight: 2, fillOpacity: 0.95 })
@@ -3319,6 +3421,18 @@
             // qui était actif quand ce marqueur a été créé.
             marker.on('popupopen', function () { marker.setPopupContent(popupForHebergement(poi)); });
             shownHebergements++;
+          });
+        }
+
+        if (wantCamping) {
+          objects.filter(isCampingType).forEach(function (poi) {
+            const latlon = extractLatLonFromPoi(poi);
+            if (!latlon) return;
+            const marker = L.circleMarker([latlon.lat, latlon.lon], { radius: 8, fillColor: '#00695C', color: '#fff', weight: 2, fillOpacity: 0.95 })
+              .bindPopup(popupForHebergement(poi))
+              .addTo(campingLayer);
+            marker.on('popupopen', function () { marker.setPopupContent(popupForHebergement(poi)); });
+            shownCamping++;
           });
         }
 
@@ -3333,29 +3447,30 @@
           });
         }
 
-        // Diagnostic : la classification hébergement/restaurant repose sur
-        // une liste de types observés sur un échantillon limité — un lieu
-        // reçu mais catégorisé "autre chose" côté DATAtourisme n'apparaît
-        // dans aucune des deux couches, silencieusement. Plutôt que de
-        // deviner d'autres valeurs de type sans avoir pu tester contre de
-        // vraies données, on journalise ici les types réels rencontrés —
-        // à inspecter dans la console si le compte affiché semble bas.
+        // Diagnostic : la classification hébergement/camping/restaurant
+        // repose sur une liste de types observés sur un échantillon limité
+        // — un lieu reçu mais catégorisé "autre chose" côté DATAtourisme
+        // n'apparaît dans aucune des trois couches, silencieusement. Plutôt
+        // que de deviner d'autres valeurs de type sans avoir pu tester
+        // contre de vraies données, on journalise ici les types réels
+        // rencontrés — à inspecter dans la console si le compte affiché
+        // semble bas.
         objects.forEach(function (poi) {
           if (!isAccommodationType(poi) && !isFoodType(poi)) {
             unclassified.push({ uuid: poi.uuid, label: poiLabel(poi), type: poi.type });
           }
         });
         if (unclassified.length > 0) {
-          console.log(`[datatourisme] ${unclassified.length} lieu(x) reçu(s) mais non classé(s) hébergement/restaurant — types observés :`, unclassified);
         }
 
         const parts = [];
         if (wantHebergements) parts.push(`${shownHebergements} hébergement(s)`);
+        if (wantCamping) parts.push(`${shownCamping} camping(s)`);
         if (wantRestaurants) parts.push(`${shownRestaurants} restaurant(s)`);
         let statusMsg = `${parts.join(', ')} affiché(s) (sur ${objects.length} lieu(x) reçu(s) dans la zone).`;
         if (pagesFetched > 1) statusMsg += ` (${pagesFetched} pages parcourues)`;
         if (truncated) statusMsg += ` ⚠️ Zone très dense, résultats limités aux ${DATATOURISME_MAX_PAGES} premières pages — zoome pour affiner.`;
-        if (unclassified.length > 0) statusMsg += ` ${unclassified.length} non reconnu(s) — détail en console.`;
+        if (unclassified.length > 0) statusMsg += ` ${unclassified.length} non reconnu(s).`;
         hebergementsStatusEl.textContent = statusMsg;
       } catch (err) {
         console.error('[datatourisme] erreur', err);
@@ -3364,6 +3479,7 @@
     }
 
     toggleHebergements.addEventListener('change', refreshDataTourismeLayers);
+    toggleCamping.addEventListener('change', refreshDataTourismeLayers);
     toggleRestaurants.addEventListener('change', refreshDataTourismeLayers);
 
     // Centre la carte sur un point précis (sélection d'un jour, marqueur
@@ -3386,6 +3502,7 @@
     const DAYPLAN_SEARCH_BUFFER_KM = 5; // plus large que sur EasyBiv : hébergements plus rares, routes plus sinueuses
 
     const dayplanModeHebergementsBtn = document.getElementById('dayplan-mode-hebergements');
+    const dayplanModeCampingBtn = document.getElementById('dayplan-mode-camping');
     const dayplanModeLibreBtn = document.getElementById('dayplan-mode-libre');
     const dayplanConfigEl = document.getElementById('dayplan-config');
     const dayplanNbDaysInput = document.getElementById('dayplan-nbdays');
@@ -3420,6 +3537,49 @@
       dayplanLayer.clearLayers();
       dayplanResultsEl.innerHTML = '';
       dayplanStatusEl.textContent = '';
+      updateDayplanFocusMode();
+    }
+
+    let dayplanFocusActive = false;
+    const dayplanHighlightLayer = L.layerGroup().addTo(map);
+
+    // Masque tous les POI le temps de la planification multi-jours en mode
+    // Hébergements — seuls les hébergements réellement retenus restent
+    // visibles, en surbrillance numérotée, pour bien voir leur position par
+    // rapport à la trace sans le bruit visuel des ateliers/eau/autres
+    // hébergements non retenus.
+    function updateDayplanFocusMode() {
+      const shouldBeActive = isLodgingDayplanMode() && dayNightPoints.some(Boolean);
+      const wasActive = dayplanFocusActive;
+      dayplanFocusActive = shouldBeActive;
+
+      if (shouldBeActive) renderDayplanHighlightMarkers();
+      else dayplanHighlightLayer.clearLayers();
+
+      // Les couches POI normales doivent se rafraîchir dès que l'état
+      // bascule dans un sens ou dans l'autre — pas seulement à l'activation.
+      if (shouldBeActive !== wasActive) {
+        refreshAteliersLayer();
+        refreshEauLayer();
+        refreshDataTourismeLayers();
+      }
+    }
+
+    function renderDayplanHighlightMarkers() {
+      dayplanHighlightLayer.clearLayers();
+      dayNightPoints.forEach(function (night, i) {
+        if (!night) return;
+        const marker = L.marker([night.lat, night.lon], {
+          icon: L.divIcon({
+            className: '',
+            html: `<div style="width:30px;height:30px;border-radius:50%;background:#8E24AA;border:3px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;color:white;font-size:12px;font-weight:800;">${i + 1}</div>`,
+            iconSize: [30, 30],
+            iconAnchor: [15, 15]
+          })
+        }).addTo(dayplanHighlightLayer);
+        marker.bindPopup(popupForHebergement(night.poi));
+        marker.on('popupopen', function () { marker.setPopupContent(popupForHebergement(night.poi)); });
+      });
     }
 
     function resetDayplanState() {
@@ -3428,6 +3588,7 @@
       dayplanConfigEl.style.display = 'none';
       dayplanResetBtn.style.display = 'none';
       dayplanModeHebergementsBtn.classList.remove('active');
+      dayplanModeCampingBtn.classList.remove('active');
       dayplanModeLibreBtn.classList.remove('active');
     }
 
@@ -3439,12 +3600,15 @@
 
       dayplanMode = mode;
       dayplanModeHebergementsBtn.classList.toggle('active', mode === 'hebergements');
+      dayplanModeCampingBtn.classList.toggle('active', mode === 'camping');
       dayplanModeLibreBtn.classList.toggle('active', mode === 'libre');
       dayplanConfigEl.style.display = 'block';
       dayplanResetBtn.style.display = 'block';
       dayplanStatusEl.textContent = '';
+      updateDayplanFocusMode();
     }
     dayplanModeHebergementsBtn.addEventListener('click', () => selectDayplanMode('hebergements'));
+    dayplanModeCampingBtn.addEventListener('click', () => selectDayplanMode('camping'));
     dayplanModeLibreBtn.addEventListener('click', () => selectDayplanMode('libre'));
     dayplanResetBtn.addEventListener('click', resetDayplanState);
 
@@ -3467,6 +3631,13 @@
         const latlon = extractLatLonFromPoi(poi);
         if (!latlon) return;
         const snapped = snapToTrack(latlon.lat, latlon.lon);
+        // La requête part sur le rectangle englobant du corridor élargi,
+        // plus large que le vrai corridor de DAYPLAN_SEARCH_BUFFER_KM selon
+        // la forme de la trace (un rectangle englobant une forme diagonale
+        // déborde largement) — sans ce filtre, un lieu à plusieurs dizaines
+        // de km de la trace pouvait se retrouver dans la liste des
+        // candidats simplement parce qu'il tombait dans ce rectangle.
+        if (snapped.distKm > DAYPLAN_SEARCH_BUFFER_KM) return;
         candidates.push({
           poi: poi,
           alongKm: snapped.alongKm,
@@ -3485,6 +3656,11 @@
       let bestDelta = Infinity;
       candidates.forEach(function (c) {
         if (excludeIds.has(c.poi.uuid)) return;
+        // Garde-fou redondant avec le filtre à la source (voir
+        // fetchLodgingCandidatesAlongTrack) mais gratuit à vérifier ici :
+        // ne jamais choisir un candidat hors du vrai corridor de recherche,
+        // même si la liste fournie en contenait un par erreur.
+        if (c.distKm > DAYPLAN_SEARCH_BUFFER_KM) return;
         const delta = Math.abs(c.alongKm - idealKm);
         if (delta < bestDelta) { bestDelta = delta; best = c; }
       });
@@ -3498,19 +3674,28 @@
     }
 
     async function computeHebergementsPlan(nbDays) {
-      dayplanStatusEl.textContent = 'Recherche des hébergements le long de la trace…';
-      let candidates;
+      const modeLabel = dayplanMode === 'camping' ? 'campings' : 'hébergements';
+      dayplanStatusEl.textContent = `Recherche des ${modeLabel} le long de la trace…`;
+      let allCandidates;
       try {
-        candidates = await fetchLodgingCandidatesAlongTrack();
+        allCandidates = await fetchLodgingCandidatesAlongTrack();
       } catch (err) {
         dayplanStatusEl.textContent = `Erreur : ${err.message}`;
         return;
       }
 
+      // Un seul appel réseau couvre camping + hébergement dur (même
+      // recherche DATAtourisme) — le filtre par type s'applique ici,
+      // recalculé à chaque calcul plutôt qu'à la source, pour permettre de
+      // basculer entre les deux modes sans redemander les données.
+      const typeFilter = dayplanMode === 'camping' ? isCampingType : isHardLodgingType;
+      const candidates = allCandidates.filter(c => typeFilter(c.poi));
+
       if (candidates.length === 0) {
-        dayplanStatusEl.textContent = 'Aucun hébergement trouvé le long de cette trace (essaie le mode Étapes libres).';
+        dayplanStatusEl.textContent = `Aucun ${dayplanMode === 'camping' ? 'camping' : 'hébergement'} trouvé le long de cette trace (essaie le mode Libre).`;
         dayNightPoints = [];
         renderDayplanResults();
+        updateDayplanFocusMode();
         return;
       }
 
@@ -3527,10 +3712,11 @@
 
       const missing = dayNightPoints.filter(p => !p).length;
       dayplanStatusEl.textContent = missing > 0
-        ? `Plan calculé — ${missing} nuit(s) sans hébergement disponible.`
-        : `Plan calculé sur ${candidates.length} hébergement(s) trouvé(s) le long de la trace.`;
+        ? `Plan calculé — ${missing} nuit(s) sans ${dayplanMode === 'camping' ? 'camping' : 'hébergement'} disponible.`
+        : `Plan calculé sur ${candidates.length} ${modeLabel} trouvé(s) le long de la trace.`;
 
       renderDayplanResults();
+      updateDayplanFocusMode();
     }
 
     function recomputeFromNightEdit(nightIndex, newCandidate) {
@@ -3544,11 +3730,16 @@
         const remainingKm = totalKm - newCandidate.alongKm;
         const nbRemainingDays = remainingNights + 1;
         const usedIds = new Set(dayNightPoints.slice(0, nightIndex + 1).filter(Boolean).map(p => p.poi.uuid));
+        // Même filtre par type que le calcul initial — sans lui, ajuster une
+        // nuit en mode Camping pourrait faire réapparaître un hôtel pour
+        // les nuits suivantes.
+        const typeFilter = dayplanMode === 'camping' ? isCampingType : isHardLodgingType;
+        const pool = (lodgingCandidates || []).filter(c => typeFilter(c.poi));
 
         for (let i = 0; i < remainingNights; i++) {
           const idealKm = newCandidate.alongKm + (i + 1) * (remainingKm / nbRemainingDays);
           dayNightIdealsKm[nightIndex + 1 + i] = idealKm;
-          const best = pickNearestCandidate(idealKm, lodgingCandidates, usedIds);
+          const best = pickNearestCandidate(idealKm, pool, usedIds);
           if (best) usedIds.add(best.poi.uuid);
           dayNightPoints[nightIndex + 1 + i] = best;
         }
@@ -3556,6 +3747,7 @@
 
       flyToPoint(newCandidate.lat, newCandidate.lon);
       renderDayplanResults();
+      updateDayplanFocusMode();
     }
 
     function computeLibrePlan(nbDays) {
@@ -3568,7 +3760,7 @@
 
     function getDayBoundariesFull() {
       const totalKm = currentTrackTotalKm;
-      const interior = dayplanMode === 'hebergements'
+      const interior = isLodgingDayplanMode()
         ? dayNightPoints.filter(Boolean).map(p => p.alongKm)
         : dayBoundariesKm.slice();
       return [0].concat(interior, [totalKm]);
@@ -3721,7 +3913,7 @@
           `<div class="day-card-badge" style="background:${DAY_COLORS[i % DAY_COLORS.length]}">${i + 1}</div>` +
           `Jour ${i + 1}<div class="day-card-dist">${distKm} km</div></div>`;
 
-        if (dayplanMode === 'hebergements' && i < dayNightPoints.length) {
+        if (isLodgingDayplanMode() && i < dayNightPoints.length) {
           const night = dayNightPoints[i];
           if (night) {
             const label = poiLabel(night.poi);
@@ -3742,7 +3934,7 @@
             `<span>⛰️ ${stats.dPlus} m D+</span>` +
             `<span>⏱️ ~${formatDuration(stats.estimatedHours)}</span>` +
             `</div>`;
-          if (dayplanMode === 'hebergements') {
+          if (isLodgingDayplanMode()) {
             html += `<div class="day-card-hint" style="margin-left:30px;">Clique un hébergement sur la carte pour l'assigner à ce jour.</div>`;
           }
         }
@@ -3759,7 +3951,7 @@
         });
       });
 
-      if (dayplanMode === 'hebergements') {
+      if (isLodgingDayplanMode()) {
         dayplanResultsEl.querySelectorAll('.lodging-change-btn').forEach(function (btn) {
           btn.addEventListener('click', function () {
             openLodgingPicker(Number(btn.dataset.nightIndex));
@@ -3809,8 +4001,9 @@
       usedIds.delete(currentNight.poi.uuid);
 
       const idealKm = dayNightIdealsKm[nightIndex];
+      const typeFilter = dayplanMode === 'camping' ? isCampingType : isHardLodgingType;
       const alternatives = lodgingCandidates
-        .filter(c => !usedIds.has(c.poi.uuid))
+        .filter(c => typeFilter(c.poi) && !usedIds.has(c.poi.uuid))
         .slice()
         .sort((a, b) => Math.abs(a.alongKm - idealKm) - Math.abs(b.alongKm - idealKm))
         .slice(0, 20); // grande liste, mais pas illimitée non plus
@@ -3823,7 +4016,8 @@
         ? dayNightPoints[nightIndex - 1].alongKm
         : 0;
 
-      lodgingPickerTitle.textContent = `Hébergement — nuit ${nightIndex + 1}`;
+      const modeEmoji = dayplanMode === 'camping' ? '🏕️' : '🏨';
+      lodgingPickerTitle.textContent = `${dayplanMode === 'camping' ? 'Camping' : 'Hébergement'} — nuit ${nightIndex + 1}`;
       lodgingPickerList.innerHTML = alternatives.map(function (c) {
         const label = poiLabel(c.poi);
         const isCurrent = c.poi.uuid === currentNight.poi.uuid;
@@ -3831,7 +4025,7 @@
         const dayDplus = elevationGainTraveling(prevBoundaryKm, c.alongKm);
         const detourKm = c.distKm * 2; // aller-retour estimé, voir commentaire ci-dessus
         return `<div class="lodging-option${isCurrent ? ' current' : ''}" data-uuid="${escapeHtml(c.poi.uuid)}">` +
-          `<div class="lodging-option-badge">🏨</div>` +
+          `<div class="lodging-option-badge">${modeEmoji}</div>` +
           `<div class="lodging-option-body">` +
           `<div class="lodging-option-name">${escapeHtml(label)}</div>` +
           `<div class="lodging-option-meta">` +
@@ -3866,7 +4060,7 @@
 
       dayplanComputeBtn.disabled = true;
       try {
-        if (dayplanMode === 'hebergements') await computeHebergementsPlan(nbDays);
+        if (isLodgingDayplanMode()) await computeHebergementsPlan(nbDays);
         else if (dayplanMode === 'libre') computeLibrePlan(nbDays);
       } catch (err) {
         console.error('[dayplan] erreur', err);
@@ -4184,7 +4378,6 @@
           placeNameCache.set(key, place);
           el.textContent = place ? `📍 ${place}` : '';
         } catch (err) {
-          console.warn('[weather] géocodage inverse échoué pour', key, '—', err.message);
           placeNameCache.set(key, null);
           el.textContent = '';
         }
@@ -4378,7 +4571,6 @@
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         return await blobToBase64(await response.blob());
       } catch (directErr) {
-        console.warn('[offline] tuile en direct échouée, tentative via proxy :', url, directErr.message);
         const proxiedUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
         const response = await fetchWithTimeout(proxiedUrl, 10000);
         if (!response.ok) throw new Error(`HTTP ${response.status} (via proxy)`);
@@ -4421,7 +4613,6 @@
           points.push({ category: f.props.category, name: f.props.name || style.label, lat: f.lat, lon: f.lon, detail: style.label });
         });
       } catch (err) {
-        console.warn('[offline] tuiles POI vélo indisponibles pour le corridor —', err.message);
       }
 
       onProgress("Recherche des points d'eau…");
@@ -4436,7 +4627,6 @@
           points.push({ category: 'eau', name: fields.name || "Point d'eau", lat: geo[1], lon: geo[0], detail: "Point d'eau potable" });
         });
       } catch (err) {
-        console.warn("[offline] points d'eau indisponibles pour le corridor —", err.message);
       }
 
       const apiKey = (localStorage.getItem(DATATOURISME_KEY_STORAGE) || datatourismeKeyInput.value || DEFAULT_DATATOURISME_KEY).trim();
@@ -4458,10 +4648,8 @@
             points.push({ category: 'restaurant', name: poiLabel(poi), lat: latlon.lat, lon: latlon.lon, detail: restaurantTypeLabel(poi) });
           });
         } catch (err) {
-          console.warn('[offline] DATAtourisme indisponible pour le corridor —', err.message);
         }
       } else {
-        console.log('[offline] pas de clé DATAtourisme — hébergements/restaurants exclus du corridor');
       }
 
       return points;
