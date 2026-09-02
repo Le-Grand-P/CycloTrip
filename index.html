@@ -816,8 +816,7 @@
     <button id="btn-otm">OpenTopo</button>
   </div>
 
-  <!-- build 2026-08-27-50 — repère de version interne, masqué pour le public -->
-  <div id="app-version" style="display:none;">build 2026-08-27-50</div>
+  <div id="app-version">build 2026-08-27-51</div>
 
   <div id="elevation-panel">
     <div id="elevation-panel-header">
@@ -2473,7 +2472,7 @@
       if (routeWaypoints.length < 2) return;
       const myGeneration = ++routeCalcGeneration;
       routeCalculateBtn.disabled = true;
-      routeCalcStatusEl.textContent = 'Calcul de l\'itinéraire…';
+      routeCalcStatusEl.textContent = 'Calcul en cours';
       // La trace précédente reste affichée pendant le calcul — clearLayers()
       // n'intervient qu'une fois le nouveau résultat prêt (juste avant de le
       // dessiner), pas ici. Avant ce correctif, la carte se retrouvait vide
@@ -2485,7 +2484,7 @@
         const feature = await calculateBRouterRouteWithRetry(routeWaypoints, profile,
           (attempt, max) => {
             if (myGeneration === routeCalcGeneration) {
-              routeCalcStatusEl.textContent = `Raté ponctuel du serveur, nouvelle tentative (${attempt + 1}/${max})…`;
+              routeCalcStatusEl.textContent = 'Calcul en cours - Le serveur subit une forte demande';
             }
           });
         // Un calcul plus récent a démarré entre-temps (nouveau glissement,
@@ -2530,7 +2529,9 @@
         // cohérent avec le message d'erreur (mieux vaut voir le dernier
         // tracé valide qu'une carte vide).
         console.error('[brouter] erreur', err);
-        routeCalcStatusEl.textContent = `Erreur : ${err.message}`;
+        routeCalcStatusEl.textContent = /thread-priority-watchdog/i.test(err.message)
+          ? 'Échec de calcul de la trace - Serveur de routing saturé. Merci de réessayer ou de raccourcir la trace'
+          : `Erreur : ${err.message}`;
       } finally {
         if (myGeneration === routeCalcGeneration) routeCalculateBtn.disabled = routeWaypoints.length < 2;
       }
