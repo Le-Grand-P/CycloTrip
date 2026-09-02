@@ -1,1 +1,1 @@
-{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[-3.3465018,47.6956135]},"properties":{"category":"bakery","osm_id":9754382434}}]}
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[-3.3465018,47.6956135]},"properties":{"category":"bakery","name":"Le Fournil Gavrais","opening_hours":"Mo,We 15:00-19:00; Sa 08:30-12:30,16:00-19:00","phone":"+33 6 38 04 43 95","website":"https://www.lefournilgavrais.fr/","osm_id":9754382434}}]}

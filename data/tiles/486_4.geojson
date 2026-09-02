@@ -1,1 +1,1 @@
-{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[0.4775355,48.6489095]},"properties":{"category":"bakery","osm_id":9756874495}}]}
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[0.4775355,48.6489095]},"properties":{"category":"bakery","name":"Au Roi de la Brioche","phone":"+33 2 33 84 94 22","osm_id":9756874495}}]}
