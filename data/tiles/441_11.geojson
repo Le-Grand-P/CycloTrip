@@ -1,1 +1,1 @@
-{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[1.1186314,44.1194554]},"properties":{"category":"bakery","name":"Marie Blachère","osm_id":12645810120}}]}
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[1.1186314,44.1194554]},"properties":{"category":"bakery","name":"Marie Blachère","opening_hours":"Mo-Sa 07:00-19:30","phone":"+33 5 63 32 66 24","website":"https://boulangeries.marieblachere.com/fr/france-FR/5187/marie-blachere-moissac/details","osm_id":12645810120}}]}
