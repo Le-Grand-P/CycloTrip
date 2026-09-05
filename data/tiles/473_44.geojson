@@ -1,1 +1,1 @@
-{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[4.4943563,47.3160977]},"properties":{"category":"bakery","name":"Brioche Dorée","osm_id":12987590026}}]}
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[4.4943563,47.3160977]},"properties":{"category":"bakery","name":"Brioche Dorée","opening_hours":"Mo-Su 07:00-22:00","website":"https://www.briochedoree.fr/","osm_id":12987590026}}]}

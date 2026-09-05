@@ -1,1 +1,1 @@
-{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[5.6029933,47.4362191]},"properties":{"category":"bakery","name":"Marie Blachère","osm_id":7004247080}}]}
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[5.6029933,47.4362191]},"properties":{"category":"bakery","name":"Marie Blachère","opening_hours":"Mo-Sa 07:00-19:30","phone":"+33 3 84 67 05 03","website":"https://boulangeries.marieblachere.com/fr/france-FR/5281/marie-blachere-gray/details","osm_id":7004247080}}]}

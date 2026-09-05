@@ -1,1 +1,1 @@
-{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[0.9818072,45.1606596]},"properties":{"category":"bakery","name":"La tourte de Limeyrat","phone":"0981994225","osm_id":14091371785}}]}
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[0.9818072,45.1606596]},"properties":{"category":"bakery","name":"La tourte de Limeyrat","phone":"+33 9 81 99 42 25","osm_id":14091371785}}]}

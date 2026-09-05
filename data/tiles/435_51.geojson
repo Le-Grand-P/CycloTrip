@@ -1,1 +1,1 @@
-{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[5.1819524,43.5489]},"properties":{"category":"bakery","name":"Boulangerie Ange","osm_id":2051115700}}]}
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[5.1819524,43.5489]},"properties":{"category":"bakery","name":"Boulangerie Ange","opening_hours":"Mo-Sa 05:30-19:30","phone":"+33 4 90 42 91 28","website":"https://www.boulangerie-ange.fr/stores/boulangerie-ange-la-fare/","osm_id":2051115700}}]}
