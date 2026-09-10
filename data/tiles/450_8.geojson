@@ -1,1 +1,1 @@
-{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[0.8633537,45.0611621]},"properties":{"category":"bakery","name":"Boulangerie Patisserie","osm_id":5001150110}}]}
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[0.8633537,45.0611621]},"properties":{"category":"bakery","name":"Boulangerie Patisserie","osm_id":5001150110}},{"type":"Feature","geometry":{"type":"Point","coordinates":[0.8306947,45.0364695]},"properties":{"category":"bakery","osm_id":14166547234}}]}
