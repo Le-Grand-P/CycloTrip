@@ -1,1 +1,1 @@
-{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[4.2331539,44.0320529]},"properties":{"category":"bakery","osm_id":503487700}}]}
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[4.2332576,44.0319606]},"properties":{"category":"bakery","osm_id":503487700}},{"type":"Feature","geometry":{"type":"Point","coordinates":[4.2332659,44.0304356]},"properties":{"category":"bakery","name":"La petite Maurice","osm_id":14174307035}}]}
