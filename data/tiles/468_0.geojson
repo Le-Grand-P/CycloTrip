@@ -1,1 +1,1 @@
-{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[0.0923213,46.8410759]},"properties":{"category":"bakery","osm_id":7962162509}}]}
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[0.0923213,46.8410759]},"properties":{"category":"bakery","osm_id":7962162509}},{"type":"Feature","geometry":{"type":"Point","coordinates":[0.0926401,46.8402399]},"properties":{"category":"bakery","name":"Aux Délices de Madeleine","osm_id":14183725937}}]}
