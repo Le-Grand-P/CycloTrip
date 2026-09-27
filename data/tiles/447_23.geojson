@@ -1,1 +1,1 @@
-{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[2.3523931,44.7813948]},"properties":{"category":"bakery","osm_id":3669273931}}]}
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[2.3523931,44.7813948]},"properties":{"category":"bakery","name":"MA Boulangerie pâtisserie","phone":"+33 6 72 56 70 74","osm_id":3669273931}}]}
