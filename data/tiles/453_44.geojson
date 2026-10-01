@@ -1,1 +1,1 @@
-{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[4.4190622,45.3398704]},"properties":{"category":"bakery","name":"La Boule de Neige","osm_id":1757134862}}]}
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[4.4190622,45.3398704]},"properties":{"category":"bakery","name":"La Boule de Neige","osm_id":1757134862}},{"type":"Feature","geometry":{"type":"Point","coordinates":[4.4198767,45.3405434]},"properties":{"category":"bakery","name":"L'Epi du Pilat","osm_id":14232170270}}]}
