@@ -1,1 +1,1 @@
-{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[0.6542361,45.7795306]},"properties":{"category":"bakery","osm_id":8983659550}}]}
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[0.6542361,45.7795306]},"properties":{"category":"bakery","name":"Boulangerie Pâtisserie","opening_hours":"Sa 07:30-13:00; Su 07:30-12:30; Mo-Tu, Th-Fr 07:30-13:00, 16:00-19:00","phone":"+33 5 45 65 13 74","osm_id":8983659550}}]}
