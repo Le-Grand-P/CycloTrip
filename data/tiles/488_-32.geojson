@@ -1,1 +1,1 @@
-{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[-3.1038657,48.8600493]},"properties":{"category":"bakery","name":"Artisan boulanger-pâtissier","osm_id":9228562969}}]}
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[-3.1038657,48.8600493]},"properties":{"category":"bakery","name":"Boulangerie Pâtisserie de L'Armor","opening_hours":"Mo-Tu,Th-Sa 06:45-12:30,16:00-19:00; Su 06:45-12:30; We closed","phone":"+33 9 73 50 24 82","osm_id":9228562969}}]}
