@@ -1,1 +1,1 @@
-{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[3.1268368,45.4044228]},"properties":{"category":"bakery","osm_id":2982575646}}]}
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[3.1268368,45.4044228]},"properties":{"category":"bakery","osm_id":2982575646}},{"type":"Feature","geometry":{"type":"Point","coordinates":[3.1254582,45.4030521]},"properties":{"category":"bakery","opening_hours":"Mo-Su 07:30-13:00","osm_id":14335612901}}]}
