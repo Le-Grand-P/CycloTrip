@@ -1,1 +1,1 @@
-{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[5.6819681,44.5907676]},"properties":{"category":"bakery","osm_id":13001824550}}]}
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[5.6819681,44.5907676]},"properties":{"category":"bakery","name":"Le pain du Forest","opening_hours":"Mo, Th 12:00-18:00","phone":"+33 4 92 58 09 07","osm_id":13001824550}}]}

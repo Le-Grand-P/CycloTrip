@@ -1,1 +1,1 @@
-{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[4.4698046,48.9772759]},"properties":{"category":"bakery","osm_id":8809281048}}]}
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[4.4698046,48.9772759]},"properties":{"category":"bakery","osm_id":8809281048}},{"type":"Feature","geometry":{"type":"Point","coordinates":[4.4024425,48.9421694]},"properties":{"category":"shop","name":"Collard","website":"https://www.velo-collard.com/","osm_id":14339026355}}]}
