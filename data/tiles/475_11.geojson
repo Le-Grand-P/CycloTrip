@@ -1,1 +1,1 @@
-{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[1.1754937,47.5001505]},"properties":{"category":"bakery","name":"boulangerie pâtisserie","osm_id":5868032685}}]}
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[1.1754937,47.5001505]},"properties":{"category":"bakery","name":"Boulangerie Cédric Noël","opening_hours":"Tu-Sa 07:00-19:00; Su 07:00-13:00","phone":"+33254207155","osm_id":5868032685}}]}
